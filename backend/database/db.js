@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 
 
-const connectDb = async () => {
+export const connectDb = async () => {
     const Db_Name = "Stationary-Management";
     const MONGO_URI = process.env.MONGO_URI;
 
