@@ -2,8 +2,10 @@ import express from "express";
 import "dotenv/config";
 const app = express();
 import cookieParser from "cookie-parser";
-import userRoutes from "./routes/user.route.js"
-import connectDB  from "./database/db.js";
+import connectDB  from "./src/database/db.js";
+import userRoutes from "./src/routes/user.route.js"
+import itemRoutes from "./src/routes/item.route.js"
+
 
 app.use(express.json());
 // app.use(urlencoded());
@@ -12,6 +14,9 @@ app.use(cookieParser());
 
 // User Routes 
 app.use("/api/v1/user",userRoutes)
+
+// Item Routes 
+app.use("/api/v1/item",itemRoutes)
 
 //Database connection
 connectDB();
