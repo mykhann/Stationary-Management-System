@@ -14,7 +14,7 @@ const router = express.Router();
 router.post('/create',isAuthenticated, upload.single("image"), createItem);
 router.get('/get', getAllItems);
 router.get('/:id', getItemById);
-router.put('/update/:id', updateItem);
+router.put('/update/:id',isAuthenticated,upload.single("image"), updateItem);
 router.delete('/delete/:id', deleteItem);
 
 export default router;
