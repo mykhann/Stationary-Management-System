@@ -1,0 +1,112 @@
+import {asyncHandler} from '../middlewares/asyncHandler.js';
+import { Request } from '../model/request.model.js';
+import { IssuanceLog } from '../model/Issuence.model.js';
+
+
+//  Create a request for a single item
+
+const createRequest = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { itemId } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity <= 0) {
+        res.status(400).json({
+            success: false,
+            message: "Quantity is required"
+        });
+
+    }
+
+   const newRequest = await Request.create({
+    userId,
+    items: [
+      {
+        itemId: itemId,  
+        quantity: quantity 
+      }
+    ]
+});
+
+
+    res.status(201).json({
+        success: true,
+        newRequest
+    });
+});
+
+//   Get all requests (admin)
+const getAllRequests = asyncHandler(async (req, res) => {
+    const requests = await Request.find()
+        .populate('userId', 'UserName email')
+        .populate('items.itemId', 'name stock')
+
+    res.status(200).json({
+        success: true,
+        requests
+    });
+});
+
+// Get user request History 
+const getUserRequests = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    const requests = await Request.find({ userId })
+       .populate('items.itemId', 'name stock')
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+        success:true,
+        requests
+    });
+});
+
+//Update request status (approve/reject)
+
+const updateRequestStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    // Validate status value
+    if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid status value"
+        });
+    }
+
+    // Find the request by ID
+    const request = await Request.findById(id);
+
+    if (!request) {
+        return res.status(404).json({
+            success: false,
+            message: "Request not found"
+        });
+    }
+
+    // Update request status and review info
+    request.status = status;
+    request.reviewedAt = new Date();
+    request.reviewedBy = req.user._id;
+
+    await request.save();
+
+    // If approved, create issuance logs for each item in the request
+    if (status === 'approved') {
+        for (const item of request.items) {
+            await IssuanceLog.create({
+                itemId: item.itemId,
+                userId: request.userId,
+                quantity: item.quantity,
+                issuedBy: req.user._id,
+                issuedAt: new Date(),
+            });
+        }
+    }
+
+    return res.status(200).json({success:true ,message: `Request ${status}` });
+});
+
+
+export {createRequest,getAllRequests,getUserRequests,updateRequestStatus}
