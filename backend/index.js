@@ -5,10 +5,10 @@ import cookieParser from "cookie-parser";
 import connectDB  from "./src/database/db.js";
 import userRoutes from "./src/routes/user.route.js"
 import itemRoutes from "./src/routes/item.route.js"
+import SupplierRoutes from "./src/routes/supplier.route.js";
 
 
 app.use(express.json());
-// app.use(urlencoded());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -17,6 +17,9 @@ app.use("/api/v1/user",userRoutes)
 
 // Item Routes 
 app.use("/api/v1/item",itemRoutes)
+
+// Supplier Routes 
+app.use("/api/v1/supplier",SupplierRoutes)
 
 //Database connection
 connectDB();

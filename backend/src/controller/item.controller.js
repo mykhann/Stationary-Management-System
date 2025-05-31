@@ -1,36 +1,44 @@
 import {asyncHandler} from '../middlewares/asyncHandler.js';
 import Item from "../model/item.model.js"
+import Supplier from '../model/supplier.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 
 // Create new item
 
 const createItem = asyncHandler(async (req, res) => {
-    const {productName,quantity,description,category,supplier}=req.body;
-    if (!productName || !quantity || !description || !category)
-    {
-        return res.status(400).json({
-            success:false,
-            message:"missing required fields"
-        })
-    }
+  const { productName, quantity, description, category, supplier } = req.body;
 
-    let imageUrl = "";
+  if (!productName || !quantity || !description || !category || !supplier) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+    });
+  }
 
-        if (req.file) {
-            const result = await uploadOnCloudinary(req.file.buffer, `items/${Date.now()}-${req.file.originalname}`);
-            imageUrl = result.secure_url;
-        }
+  let imageUrl = "";
+  if (req.file) {
+    const result = await uploadOnCloudinary(
+      req.file.buffer,
+      `items/${Date.now()}-${req.file.originalname}`
+    );
+    imageUrl = result.secure_url;
+  }
 
   const newItem = await Item.create({
     productName,
     quantity,
     description,
     category,
-    supplier,
-    images: imageUrl ? [imageUrl] : []
-
+    images: imageUrl ? [imageUrl] : [],
+    supplier, // Linking the item to the supplier
   });
-  res.status(201).json({ message:"added new item",success: true, newItem });
+
+  // Now update the supplier to include this item
+  await Supplier.findByIdAndUpdate(supplier, {
+    $push: { itemsSupplied: newItem._id },
+  });
+
+  res.status(201).json({ success: true, newItem });
 });
 
 
