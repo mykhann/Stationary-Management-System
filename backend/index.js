@@ -26,7 +26,8 @@ app.use("/api/v1/request",requestRoutes)
 // Supplier Routes 
 app.use("/api/v1/supplier",SupplierRoutes)
 
-
+// Issuence Routes 
+app.use("/api/v1/issuence",issuenceRoutes)
 
 //Database connection
 connectDB();
