@@ -69,6 +69,8 @@ const deleteLog=asyncHandler(async(req,res)=>{
         message:"Log deleted successfully"
     })
 
-})
+});
+
+
 
 export { getIssuenceLogs, getIssuenceLogsById ,deleteLog}

@@ -1,6 +1,7 @@
 import {asyncHandler} from '../middlewares/asyncHandler.js';
 import { Request } from '../model/request.model.js';
 import { IssuanceLog } from '../model/Issuence.model.js';
+import { sendEmail } from '../middlewares/sendEmail.js';
 
 
 //  Create a request for a single item
@@ -76,7 +77,7 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
     }
 
     // Find the request by ID
-    const request = await Request.findById(id);
+    const request = await Request.findById(id).populate("userId");
 
     if (!request) {
         return res.status(404).json({
@@ -103,6 +104,13 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
                 issuedAt: new Date(),
             });
         }
+        if (request.userId.email) {
+        await sendEmail({
+            to: request.userId.email,
+            subject: 'Your Request Has Been Approved',
+            text: `Hello ${request.userId.name || ''},\n\nYour request with ID ${request._id} has been approved.\n\nRegards,\nAdmin Team`,
+        });
+    }
     }
 
     return res.status(200).json({success:true ,message: `Request ${status}` });
