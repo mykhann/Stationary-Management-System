@@ -7,6 +7,7 @@ import userRoutes from "./src/routes/user.route.js"
 import itemRoutes from "./src/routes/item.route.js"
 import SupplierRoutes from "./src/routes/supplier.route.js";
 import requestRoutes from "./src/routes/request.route.js"
+import issuenceRoutes from "./src/routes/issuence.route.js"
 
 
 app.use(express.json());
@@ -21,8 +22,11 @@ app.use("/api/v1/item",itemRoutes)
 
 // request Routes 
 app.use("/api/v1/request",requestRoutes)
+
 // Supplier Routes 
 app.use("/api/v1/supplier",SupplierRoutes)
+
+
 
 //Database connection
 connectDB();

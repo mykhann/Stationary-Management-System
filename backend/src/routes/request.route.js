@@ -4,6 +4,7 @@ import {
   getAllRequests,
   updateRequestStatus,
   getUserRequests,
+  getRequestById
 } from '../controller/request.controller.js';
 import { isAuthenticated } from '../middlewares/isAuthenticated.middleware.js';
 
@@ -14,6 +15,7 @@ router.post('/:itemId', isAuthenticated, createRequest);
 
 // User gets their own request history
 router.get('/history', isAuthenticated, getUserRequests);
+router.get('/:id', isAuthenticated, getRequestById);
 
 // Admin gets all requests
 router.get('/get', isAuthenticated, getAllRequests);

@@ -24,7 +24,7 @@ const createSupplier = asyncHandler(async (req, res) => {
 
 // Get all suppliers
 const getAllSuppliers = asyncHandler(async (req, res) => {
-  const suppliers = await Supplier.find().populate('itemsSupplied', 'name stock'); 
+  const suppliers = await Supplier.find().populate('itemsSupplied', 'productName quantity'); 
 
   res.status(200).json({ success: true, suppliers });
 });

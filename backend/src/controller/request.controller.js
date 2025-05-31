@@ -108,5 +108,27 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
     return res.status(200).json({success:true ,message: `Request ${status}` });
 });
 
+const getRequestById = asyncHandler(async(req,res)=>{
+    const {reqId}= req.params;
+    if (!reqId){
+       return res.status(400).json({
+            success:false,
+            message:"request Id Missing"
+        })
+    }
+    const request= await Request.findById(reqId);
+    if (!request){
+        return res.status(404).json({
+            success:false,
+            message:"request not found"
+        })
+    }
+    res.status(200).json({
+        success:true,
+        request
 
-export {createRequest,getAllRequests,getUserRequests,updateRequestStatus}
+    })
+})
+
+
+export {createRequest,getAllRequests,getUserRequests,updateRequestStatus,getRequestById}
