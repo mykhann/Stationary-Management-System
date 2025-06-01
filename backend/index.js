@@ -8,6 +8,7 @@ import itemRoutes from "./src/routes/item.route.js"
 import SupplierRoutes from "./src/routes/supplier.route.js";
 import requestRoutes from "./src/routes/request.route.js"
 import issuenceRoutes from "./src/routes/issuence.route.js"
+import orderRoutes from "./src/routes/order.route.js"
 
 
 app.use(express.json());
@@ -28,6 +29,9 @@ app.use("/api/v1/supplier",SupplierRoutes)
 
 // Issuence Routes 
 app.use("/api/v1/issuence",issuenceRoutes)
+
+// order Routes 
+app.use("/api/v1/order",orderRoutes)
 
 //Database connection
 connectDB();

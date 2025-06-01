@@ -14,11 +14,16 @@ const ItemSchema = new Schema({
     required: true,
     trim: true
   },
-  quantity: {
+  price:{required:true,
+    type:Number
+
+  },
+  stock: {
     type: Number,
     required: true,
     default: 0
   },
+ 
   unit: {
     type: String,
     enum: ['pcs', 'pack', 'box', 'dozen'],

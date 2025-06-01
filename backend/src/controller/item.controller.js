@@ -6,9 +6,9 @@ import { uploadOnCloudinary } from '../utils/cloudinary.js';
 // Create new item
 
 const createItem = asyncHandler(async (req, res) => {
-  const { productName, quantity, description, category, supplier } = req.body;
+  const { productName, stock, description, category, supplier,price } = req.body;
 
-  if (!productName || !quantity || !description || !category || !supplier) {
+  if (!productName || !stock || !description || !category || !supplier || !price) {
     return res.status(400).json({
       success: false,
       message: "Missing required fields",
@@ -26,9 +26,10 @@ const createItem = asyncHandler(async (req, res) => {
 
   const newItem = await Item.create({
     productName,
-    quantity,
+    stock,
     description,
     category,
+    price,
     images: imageUrl ? [imageUrl] : [],
     supplier, // Linking the item to the supplier
   });
