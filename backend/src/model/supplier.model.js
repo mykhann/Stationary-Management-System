@@ -35,7 +35,7 @@ const supplierSchema = new Schema({
     type: Date,
     default: Date.now
   }
-});
+},{timestamps:true});
 
 const Supplier = model('Supplier', supplierSchema);
 

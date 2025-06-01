@@ -6,6 +6,6 @@ const IssuanceLogSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   issuedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   issuedAt: { type: Date, default: Date.now }
-});
+},{timestamps:true});
 
 export const IssuanceLog = mongoose.model('IssuanceLog', IssuanceLogSchema);

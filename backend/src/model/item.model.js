@@ -42,7 +42,7 @@ const ItemSchema = new Schema({
     type: Date,
     default: Date.now
   }
-});
+},{timestamps:true});
 
 const Item = model('Item', ItemSchema);
 

@@ -15,10 +15,11 @@ router.post('/:itemId', isAuthenticated, createRequest);
 
 // User gets their own request history
 router.get('/history', isAuthenticated, getUserRequests);
-router.get('/:id', isAuthenticated, getRequestById);
-
 // Admin gets all requests
 router.get('/get', isAuthenticated, getAllRequests);
+
+router.get('/:id', isAuthenticated, getRequestById);
+
 
 // Admin updates request status (approve/reject)
 router.patch('/:id/status', isAuthenticated, updateRequestStatus);

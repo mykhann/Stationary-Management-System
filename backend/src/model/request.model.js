@@ -10,6 +10,6 @@ const RequestSchema = new mongoose.Schema({
     }
   ],
   createdAt: { type: Date, default: Date.now }
-});
+},{timestamps:true});
 
 export const Request = mongoose.model('Request', RequestSchema);

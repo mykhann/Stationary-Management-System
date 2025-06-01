@@ -2,7 +2,7 @@ import { IssuanceLog } from "../model/Issuence.model.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 const getIssuenceLogs = asyncHandler(async (req, res) => {
-    const logs = await IssuanceLog.find().populate(
+    const logs = await IssuanceLog.find().sort({createdAt:-1}).populate(
         [
             { path: "issuedBy", select: "name" },
             { path: "userId", select: "name email phone" }
