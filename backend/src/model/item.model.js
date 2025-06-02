@@ -41,7 +41,7 @@ const ItemSchema = new Schema({
   },
   reorderLevel: {
     type: Number,
-    default: 10
+    default: 15
   },
   createdAt: {
     type: Date,

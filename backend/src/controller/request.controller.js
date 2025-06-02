@@ -119,7 +119,7 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
                 text: `Hello ${request.userId.name || ''},\n\nYour request with ID ${request._id} has been approved.\n\nRegards,\nAdmin Team`,
             });
         }
-    } 
+    }
     // If rejected, send rejection email
     else if (status === 'rejected') {
         if (request.userId.email) {

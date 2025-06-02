@@ -1,7 +1,9 @@
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import Order from '../model/order.model.js';
 import Item from "../model/item.model.js"
+import { reOrderHelper } from '../utils/ReOrder.helper.js';
 import { sendEmail } from '../middlewares/sendEmail.js';
+import { IssuanceLog } from '../model/Issuence.model.js';
 
 
 // Create a new order
@@ -35,6 +37,9 @@ const createOrder = asyncHandler(async (req, res) => {
     dbItem.stock -= item.quantity;
     await dbItem.save();
 
+    // Call reorder helper after stock update
+    await reOrderHelper(dbItem._id);
+
     // Store for order creation
     updatedOrderItems.push({
       item: dbItem._id,
@@ -61,7 +66,6 @@ const createOrder = asyncHandler(async (req, res) => {
 
   res.status(201).json({ success: true, order });
 });
-
 
 
 // Get all orders (admin)
@@ -111,19 +115,45 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   const order = await Order.findById(id).populate('user').populate('orderItems.item');
-
   if (!order) {
     return res.status(404).json({ success: false, message: "Order not found" });
   }
 
   const prevStatus = order.orderStatus;
-
   order.orderStatus = status;
   await order.save();
 
-  
+  // Deduct quantity when moving to 'Processing' (existing logic)
+  if (status === 'Processing' && prevStatus !== 'Processing') {
+    for (const item of order.orderItems) {
+      const dbItem = await Item.findById(item.item._id);
+      if (dbItem.quantity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient quantity for item: ${dbItem.productName}`,
+        });
+      }
+      dbItem.quantity -= item.quantity;
+      await dbItem.save();
 
-  // Send email on 'Processing' or 'Delivered'
+      // Your reorder logic here...
+    }
+  }
+
+  // **Generate issuance logs when status changes to 'Delivered'**
+  if (status === 'Delivered' && prevStatus !== 'Delivered') {
+    for (const item of order.orderItems) {
+      await IssuanceLog.create({
+        itemId: item.item._id,
+        userId: order.user._id,
+        quantity: item.quantity,
+        issuedBy: req.user._id,  // assuming the logged-in user updates status
+        issuedAt: new Date(),
+      });
+    }
+  }
+
+  // Send notification emails on 'Processing' or 'Delivered'
   if (['Processing', 'Delivered'].includes(status) && order.user.email) {
     const subject = `Your Order has been ${status}`;
     const text = `Hello ${order.user.UserName || ''},\n\nYour order with ID ${order._id} is now marked as ${status}.\n\nThank you for shopping with us!\n\n- Your Team`;

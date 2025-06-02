@@ -6,7 +6,7 @@ const reorderSchema = new mongoose.Schema({
     ref: 'Item',
     required: true,
   },
-  quantity: {
+  stock: {
     type: Number,
     required: true,
     min: 1,
