@@ -6,10 +6,10 @@ const DashboardSideBar = ({ closeSidebar }) => {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Products Management", path: "/dashboard/product-management" },
     { name: "Customer Management", path: "/dashboard/customer-management" },
-    { name: "Orders", path: "/dashboard/orders" },
+    { name: "Orders", path: "/dashboard/order-management" },
     { name: "Analytics", path: "/dashboard/analytics" },
     { name: "Predictive Insights", path: "/dashboard/predictive-insights" },
-    { name: "Promotions", path: "/dashboard/promotions" },
+
     { name: "Re-Orders", path: "/dashboard/re-orders" },
   ];
 

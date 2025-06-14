@@ -5,6 +5,7 @@ import {
   getUserOrders,
   getOrderById,
   updateOrderStatus,
+  getReorder,
 } from '../controller/order.controller.js';
 import { isAuthenticated } from '../middlewares/isAuthenticated.middleware.js';
 
@@ -12,6 +13,9 @@ const router = express.Router();
 
 // Create a new order (user must be logged in)
 router.post('/create', isAuthenticated, createOrder);
+
+// REORDER DETAILS 
+router.get("/reorder",isAuthenticated,getReorder)
 
 // Get all orders (admin only)
 router.get('/get', isAuthenticated, getAllOrders);

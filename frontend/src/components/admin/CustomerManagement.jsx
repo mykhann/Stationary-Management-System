@@ -1,82 +1,127 @@
-import React from "react";
-import { Eye } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Eye, Menu } from "lucide-react";
 import DashboardSideBar from "./DashboardSideBar";
-
-const customers = [
-  {
-    id: 1,
-    name: "Jane Doe",
-    email: "jane@example.com",
-    phone: "123-456-7890",
-    registrationDate: "2024-10-05",
-    orders: 12,
-    totalSpend: "$320.00",
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    email: "john@example.com",
-    phone: "987-654-3210",
-    registrationDate: "2023-04-11",
-    orders: 7,
-    totalSpend: "$210.00",
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    email: "emma@example.com",
-    phone: "555-123-4567",
-    registrationDate: "2022-12-30",
-    orders: 5,
-    totalSpend: "$130.00",
-  },
-];
+import BASE_URL from "../../apiConfig";
 
 const CustomerManagement = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
+
+  useEffect(() => {
+    const fetchCustomersFromOrders = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/v1/order/get`,{
+          withCredentials:true
+          
+        });
+        const orders = response.data.orders;
+
+        const customerMap = new Map();
+
+        orders.forEach((order) => {
+          const user = order.user;
+          const customerId = user._id;
+
+          if (!customerMap.has(customerId)) {
+            customerMap.set(customerId, {
+              id: customerId,
+              name: order.shippingAddress.fullName || "N/A",
+              email: user.email,
+              phone: user.phone,
+              address: order.shippingAddress.address || "",
+              orders: 1,
+              totalSpend: order.totalAmount || 0,
+              registrationDate: order.createdAt,
+            });
+          } else {
+            const existing = customerMap.get(customerId);
+            existing.orders += 1;
+            existing.totalSpend += order.totalAmount || 0;
+            customerMap.set(customerId, existing);
+          }
+        });
+
+        setCustomers(Array.from(customerMap.values()));
+      } catch (error) {
+        console.error("Failed to fetch customer data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomersFromOrders();
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white">
-        <DashboardSideBar />
-      </aside>
+      {/* Sidebar (Desktop & Mobile) */}
+      <div className="hidden md:block w-64 bg-gray-900 text-white">
+        <DashboardSideBar closeSidebar={closeSidebar} />
+      </div>
+
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="w-64 bg-gray-900 text-white">
+            <DashboardSideBar closeSidebar={closeSidebar} />
+          </div>
+          <div className="flex-1 bg-black bg-opacity-50" onClick={closeSidebar} />
+        </div>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
-        <h2 className="text-2xl font-semibold mb-6">Customer Management</h2>
-
-        <div className="overflow-x-auto bg-white shadow-md rounded-2xl">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
-              <tr>
-                <th className="p-4 text-left">Name</th>
-                <th className="p-4 text-left">Email</th>
-                <th className="p-4 text-left">Phone</th>
-                <th className="p-4 text-left">Registered</th>
-                <th className="p-4 text-left">Orders</th>
-                <th className="p-4 text-left">Total Spend</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((customer) => (
-                <tr key={customer.id} className="border-b hover:bg-gray-50">
-                  <td className="p-4">{customer.name}</td>
-                  <td className="p-4">{customer.email}</td>
-                  <td className="p-4">{customer.phone}</td>
-                  <td className="p-4">{customer.registrationDate}</td>
-                  <td className="p-4">{customer.orders}</td>
-                  <td className="p-4">{customer.totalSpend}</td>
-                  <td className="p-4">
-                    <button className="flex items-center text-blue-600 hover:underline">
-                      <Eye className="w-4 h-4 mr-1" /> View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="flex-1 w-full md:ml-64">
+        <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
+          <button onClick={toggleSidebar}>
+            <Menu className="w-6 h-6 text-gray-700" />
+          </button>
+          <h2 className="text-lg font-semibold text-gray-800">Customers</h2>
+          <div className="w-6" />
         </div>
-      </main>
+
+        <main className="p-6">
+          <h2 className="text-2xl font-semibold mb-6 hidden md:block">Customer Management</h2>
+
+          {loading ? (
+            <p>Loading customers...</p>
+          ) : (
+            <div className="overflow-x-auto bg-white shadow-md rounded-2xl">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
+                  <tr>
+                    <th className="p-4 text-left">Name</th>
+                    <th className="p-4 text-left">Email</th>
+                    <th className="p-4 text-left">Phone</th>
+                    <th className="p-4 text-left">Orders</th>
+                    <th className="p-4 text-left">Total Spend</th>
+                    <th className="p-4 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.map((customer) => (
+                    <tr key={customer.id} className="border-b hover:bg-gray-50">
+                      <td className="p-4">{customer.name}</td>
+                      <td className="p-4">{customer.email}</td>
+                      <td className="p-4">{customer.phone}</td>
+                      <td className="p-4">{customer.orders}</td>
+                      <td className="p-4">Rs. {customer.totalSpend.toLocaleString()}</td>
+                      <td className="p-4">
+                        <button className="flex items-center text-blue-600 hover:underline">
+                          <Eye className="w-4 h-4 mr-1" /> View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

@@ -157,6 +157,21 @@ const LogoutUser = asyncHandler(async (req, res) => {
     });
 });
 
+// Get all users 
+const getUsers=asyncHandler(async(req,res)=>{
+    const users= await User.find({createdAt:-1});
+    if (!users){
+        return res.status(404).json({
+            success:false,
+            message:"No User"
+        })
+    }
+    res.status(200).json({
+        success:true,
+        users
+    })
+
+})
 const UpdateUser = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const source = req.body;
@@ -212,5 +227,6 @@ export {
     LoginUser,
     LogoutUser,
     UpdateUser,
-    getProfileDetails
+    getProfileDetails,
+    getUsers
 }

@@ -4,7 +4,7 @@ import Item from "../model/item.model.js"
 import { reOrderHelper } from '../utils/ReOrder.helper.js';
 import { sendEmail } from '../middlewares/sendEmail.js';
 import { IssuanceLog } from '../model/Issuence.model.js';
-
+import Reorder from "../model/reorder.model.js"
 
 // Create a new order
 const createOrder = asyncHandler(async (req, res) => {
@@ -71,7 +71,7 @@ const createOrder = asyncHandler(async (req, res) => {
 // Get all orders (admin)
 const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find()
-    .populate('user', 'UserName email')
+    .populate('user', 'UserName email phone')
     .populate('orderItems.item', 'name stock')
     .sort({ createdAt: -1 });
 
@@ -136,18 +136,17 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       dbItem.quantity -= item.quantity;
       await dbItem.save();
 
-      // Your reorder logic here...
+      
     }
   }
 
-  // **Generate issuance logs when status changes to 'Delivered'**
   if (status === 'Delivered' && prevStatus !== 'Delivered') {
     for (const item of order.orderItems) {
       await IssuanceLog.create({
         itemId: item.item._id,
         userId: order.user._id,
         quantity: item.quantity,
-        issuedBy: req.user._id,  // assuming the logged-in user updates status
+        issuedBy: req.user._id,  
         issuedAt: new Date(),
       });
     }
@@ -163,10 +162,25 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: `Order marked as ${status}` });
 });
 
+// REORDER DETAILS 
+const getReorder=asyncHandler(async(req,res)=>{
+  const reorder=await Reorder.find().populate("supplierId").sort({createdAt:-1})
+  if (!reorder){
+    return res.status(404).json({
+      success:false,
+
+    })
+  }
+  res.status(200).json({
+    success:true,
+    reorder
+  })
+})
 export {
   createOrder,
   getAllOrders,
   getUserOrders,
   getOrderById,
   updateOrderStatus,
+  getReorder
 };

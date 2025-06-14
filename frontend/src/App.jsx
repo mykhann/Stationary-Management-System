@@ -11,15 +11,10 @@ import { store } from "./reduxStore/store";
 import { ToastContainer } from "react-toastify";
 import ProfileDetails from "@components/auth/ProfileDetails";
 import Dashboard from "@components/admin/Dashboard";
-import AddProduct from "@components/admin/AddProduct";
-import UpdateProduct from "@components/admin/UpdateProduct";
-import ViewOrders from "@components/admin/ViewOrders";
-import DeleteOrders from "@components/admin/DeleteOrders";
 import EditProduct from "@components/admin/EditProduct";
 import EditOrders from "@components/admin/EditOrders";
 import Cart from "@components/order/Cart";
 import Checkout from "@components/order/Checkout";
-
 
 // redux persist
 import { PersistGate } from "redux-persist/integration/react";
@@ -29,6 +24,8 @@ import Layout from "@components/layout/Layout";
 import OrderHistory from "@components/order/OrderHistory";
 import ProductManagement from "@components/admin/ProductManagement";
 import CustomerManagement from "@components/admin/CustomerManagement";
+import OrdersManagement from "@components/admin/OrdersManagement";
+import ReorderList from "@components/admin/ReOrderList";
 
 let persistor = persistStore(store);
 
@@ -106,26 +103,19 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin/orders",
+    path: "/dashboard/order-management",
     element: (
       <ProtectedRoutes>
-        <ViewOrders />
+        <OrdersManagement/>
       </ProtectedRoutes>
     ),
   },
+
   {
-    path: "/admin/orders/delete",
+    path: "dashboard/re-orders",
     element: (
       <ProtectedRoutes>
-        <DeleteOrders />
-      </ProtectedRoutes>
-    ),
-  },
-  {
-    path: "/admin/product/edit/:id",
-    element: (
-      <ProtectedRoutes>
-        <EditProduct />
+        <ReorderList />
       </ProtectedRoutes>
     ),
   },
