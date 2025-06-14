@@ -8,7 +8,7 @@ const ItemSchema = new Schema({
     required: true,
     trim: true
   },
-  images: { type: [String], default: [] },
+  avatar: { type: [String] },
   description: {
     type: String,
     required: true,

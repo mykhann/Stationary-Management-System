@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.Toastify__toast {
+  background-color: #151615 !important; /* Custom background */
+  color: #ffffff !important; /* Custom text color */
+  font-size: 14px !important; /* Slightly smaller font size */
+  padding: 8px 12px !important; /* Reduced padding for thinner appearance */
+  border-radius: 8px !important; /* Slightly reduced border-radius */
+  min-height: 8px !important; /* Removes default height restriction */
+}
+
+.Toastify__toast--error {
+  background-color: #f44336 !important; /* Red for errors */
+}
+
+.Toastify__toast--success {
+  background-color: #82d185 !important; /* Green for success */
+}
+body {
+ background-color: 
+}

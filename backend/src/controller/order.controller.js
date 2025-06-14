@@ -83,7 +83,7 @@ const getUserOrders = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   const orders = await Order.find({ user: userId })
-    .populate('orderItems.item', 'name stock')
+    .populate('orderItems.item', 'name stock avatar')
     .sort({ createdAt: -1 });
 
   res.status(200).json({ success: true, orders });

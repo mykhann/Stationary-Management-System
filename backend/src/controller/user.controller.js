@@ -2,14 +2,15 @@ import express from "express";
 import bcrypt from "bcrypt";
 import { User } from "../model/User.model.js";
 import jwt from "jsonwebtoken";
+import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 
 const RegisterUser = asyncHandler(async (req, res) => {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone,address } = req.body;
 
     // Check if all fields are provided
-    if (!name || !email || !password || !phone) {
+    if (!name || !email || !password || !phone ||!address) {
         return res.status(400).json({
             success: false,
             message: "Please enter all fields",
@@ -63,6 +64,10 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     // Hash password
     const securePass = await bcrypt.hash(password, 10);
+    if (!req.file) {
+            return res.status(404).json({ success: false, message: "Please upload avatar" });
+        }
+        const avatarResult = await uploadOnCloudinary(req.file.buffer, req.file.originalName)
 
     // Create user
     const user = await User.create({
@@ -70,6 +75,8 @@ const RegisterUser = asyncHandler(async (req, res) => {
         email,
         password: securePass,
         phone,
+        avatar: avatarResult.secure_url,
+        address
     });
 
     res.status(201).json({
@@ -120,7 +127,9 @@ const LoginUser = asyncHandler(async (req, res) => {
         username:user.username,
         phone:user.phone,
         role: user.role,
-        _id:user._id
+        _id:user._id,
+        address:user.address,
+        avatar:user.avatar
     };
 
     const cookieOptions = {
@@ -160,6 +169,8 @@ const UpdateUser = asyncHandler(async (req, res) => {
         })
     }
     if (source.name) user.name = source.name;
+    if (source.address) user.address = source.address;
+    if (source.phone) user.phone = source.phone;
     if (source.email) user.email = source.email;
     if (source.password) {
         const salt = await bcrypt.genSalt(10);

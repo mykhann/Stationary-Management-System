@@ -30,7 +30,7 @@ const createItem = asyncHandler(async (req, res) => {
     description,
     category,
     price,
-    images: imageUrl ? [imageUrl] : [],
+    avatar: imageUrl ? [imageUrl] : [],
     supplier, // Linking the item to the supplier
   });
 
@@ -46,7 +46,7 @@ const createItem = asyncHandler(async (req, res) => {
 // Get all items
 
 const getAllItems = asyncHandler(async (req, res) => {
-  const items = await Item.find().populate('supplier', 'name email phone');
+  const items = await Item.find().populate('supplier', 'name email phone').sort({createdAt:-1});
   res.status(200).json({ success: true, items });
 });
 
@@ -87,7 +87,7 @@ const updateItem = asyncHandler(async (req, res) => {
       req.file.buffer,
       `items/${Date.now()}-${req.file.originalname}`
     );
-    item.images = [result.secure_url]; 
+    item.image = [result.secure_url]; 
   }
 
   await item.save();
