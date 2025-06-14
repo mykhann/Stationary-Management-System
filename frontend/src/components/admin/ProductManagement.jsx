@@ -67,6 +67,7 @@ const ProductManagement = () => {
             <table className="min-w-full text-sm">
               <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
                 <tr>
+                  <th className="p-4 text-left">Image</th>
                   <th className="p-4 text-left">Product</th>
                   <th className="p-4 text-left">Category</th>
                   <th className="p-4 text-left">Price</th>
@@ -77,6 +78,14 @@ const ProductManagement = () => {
               <tbody>
                 {products.map((product) => (
                   <tr key={product._id} className="border-b hover:bg-gray-50">
+                    {/* Image Cell */}
+                    <td className="p-4">
+                      <img
+                        src={product.avatar || "/placeholder.png"} 
+                        alt={product.productName}
+                        className="w-16 h-16 object-cover rounded-md border"
+                      />
+                    </td>
                     <td className="p-4">{product.productName}</td>
                     <td className="p-4">{product.category}</td>
                     <td className="p-4">Rs. {product.price}</td>
