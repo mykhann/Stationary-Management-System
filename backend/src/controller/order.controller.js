@@ -9,7 +9,7 @@ import Reorder from "../model/reorder.model.js"
 // Create a new order
 const createOrder = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { orderItems, shippingAddress, paymentMethod } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, paymentResult } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     return res.status(400).json({ success: false, message: "No items in the order" });
@@ -33,14 +33,11 @@ const createOrder = asyncHandler(async (req, res) => {
 
     totalAmount += dbItem.price * item.quantity;
 
-    // Deduct stock
     dbItem.stock -= item.quantity;
     await dbItem.save();
 
-    // Call reorder helper after stock update
     await reOrderHelper(dbItem._id);
 
-    // Store for order creation
     updatedOrderItems.push({
       item: dbItem._id,
       quantity: item.quantity,
@@ -53,9 +50,13 @@ const createOrder = asyncHandler(async (req, res) => {
     totalAmount,
     shippingAddress,
     paymentMethod,
+    paymentResult: paymentResult ? {
+      id: paymentResult.id,
+      status: paymentResult.status,
+      amount: paymentResult.amount,
+    } : undefined,
   });
 
-  // Send confirmation email
   if (req.user.email) {
     await sendEmail({
       to: req.user.email,
@@ -66,6 +67,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
   res.status(201).json({ success: true, order });
 });
+
 
 
 // Get all orders (admin)

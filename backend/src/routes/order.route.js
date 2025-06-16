@@ -1,4 +1,5 @@
 import express from 'express';
+import Stripe from 'stripe';
 import {
   createOrder,
   getAllOrders,
@@ -10,12 +11,13 @@ import {
 import { isAuthenticated } from '../middlewares/isAuthenticated.middleware.js';
 
 const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create a new order (user must be logged in)
 router.post('/create', isAuthenticated, createOrder);
 
 // REORDER DETAILS 
-router.get("/reorder",isAuthenticated,getReorder)
+router.get('/reorder', isAuthenticated, getReorder);
 
 // Get all orders (admin only)
 router.get('/get', isAuthenticated, getAllOrders);
@@ -28,5 +30,45 @@ router.get('/:id', isAuthenticated, getOrderById);
 
 // Update order status (admin only)
 router.put('/:id/status', isAuthenticated, updateOrderStatus);
+
+// Stripe: create PaymentIntent for checkout
+router.post('/create-payment-intent', isAuthenticated, async (req, res) => {
+  try {
+    const { cartItems } = req.body;
+
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No items in cart.',
+      });
+    }
+
+    const amount = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity * 100,
+      0
+    );
+
+    if (amount < 50) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order total is too small to process payment.',
+      });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+    });
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 
 export default router;
