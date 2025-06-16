@@ -4,13 +4,14 @@ import { Link } from "react-router-dom";
 const DashboardSideBar = ({ closeSidebar }) => {
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Products Management", path: "/dashboard/product-management" },
+    { name: "Inventory Management", path: "/dashboard/product-management" },
     { name: "Customer Management", path: "/dashboard/customer-management" },
-    { name: "Orders", path: "/dashboard/order-management" },
+    { name: "Order Management", path: "/dashboard/order-management" },
+    { name: "Suppliers Management", path: "/dashboard/supplier-management" },
+    { name: "Re-Orders", path: "/dashboard/re-orders" },
     { name: "Analytics", path: "/dashboard/analytics" },
     { name: "Predictive Insights", path: "/dashboard/predictive-insights" },
 
-    { name: "Re-Orders", path: "/dashboard/re-orders" },
   ];
 
   return (

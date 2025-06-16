@@ -1,10 +1,10 @@
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import Supplier from '../model/supplier.model.js';
-import Item from '../model/item.model.js';
+
 
 // Create a new supplier
 const createSupplier = asyncHandler(async (req, res) => {
-  const { name, contactPerson, email, phone, address, itemsSupplied } = req.body;
+  const { name, contactPerson, email, phone, address } = req.body;
 
   if (!name) {
     return res.status(400).json({ success: false, message: 'Supplier name is required' });
@@ -16,7 +16,7 @@ const createSupplier = asyncHandler(async (req, res) => {
     email,
     phone,
     address,
-    itemsSupplied
+    
   });
 
   res.status(201).json({ success: true, supplier: newSupplier });

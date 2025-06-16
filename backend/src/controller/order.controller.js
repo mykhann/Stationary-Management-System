@@ -72,7 +72,7 @@ const createOrder = asyncHandler(async (req, res) => {
 const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find()
     .populate('user', 'UserName email phone')
-    .populate('orderItems.item', 'name stock')
+    .populate('orderItems.item', 'productName stock')
     .sort({ createdAt: -1 });
 
   res.status(200).json({ success: true, orders });

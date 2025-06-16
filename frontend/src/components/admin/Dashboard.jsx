@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart2, Users, ShoppingCart, Box, Menu } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 import DashboardSideBar from "./DashboardSideBar";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import BASE_URL from "../../apiConfig";
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white shadow-md rounded-2xl ${className}`}>
@@ -15,24 +17,69 @@ const CardContent = ({ children, className = "" }) => (
   <div className={`p-4 ${className}`}>{children}</div>
 );
 
-
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const {user}=useSelector((store)=>store.auth)
-
-  const weeklyChartData = {
+  const { user } = useSelector((store) => store.auth);
+  const [orders, setOrders] = useState([]);
+  const [items, setItems] = useState([]);
+  const [weeklyRevenue, setWeeklyRevenue] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
+  const [customerCount, setCustomerCount] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0);
+  const [weeklyChartData, setWeeklyChartData] = useState({
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
         label: "Revenue",
-        data: [4000, 5000, 4800, 6000, 5500, 6300, 7000],
+        data: [0, 0, 0, 0, 0, 0, 0],
         borderColor: "#3b82f6",
         backgroundColor: "#3b82f655",
         tension: 0.4,
         fill: true,
       },
     ],
-  };
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersResp, itemsResp] = await Promise.all([
+          axios.get(`${BASE_URL}/api/v1/order/get`, { withCredentials: true }),
+          axios.get(`${BASE_URL}/api/v1/item/get`, { withCredentials: true })
+        ]);
+
+        const ordersArr = Array.isArray(ordersResp.data.orders) ? ordersResp.data.orders : [];
+        const itemsArr = Array.isArray(itemsResp.data.items) ? itemsResp.data.items : [];
+
+        setOrders(ordersArr);
+        setItems(itemsArr);
+        setOrderCount(ordersArr.length);
+        setCustomerCount(new Set(ordersArr.map(o => o.user)).size);
+        setLowStockCount(itemsArr.filter(i => i.stock < 10).length);
+
+        const dailyRevenue = [0, 0, 0, 0, 0, 0, 0];
+        ordersArr.forEach((order) => {
+          const day = new Date(order.createdAt).getDay();
+          dailyRevenue[day] += order.totalAmount || 0;
+        });
+        setWeeklyRevenue(dailyRevenue.reduce((acc, cur) => acc + cur, 0));
+
+        setWeeklyChartData({
+          ...weeklyChartData,
+          datasets: [
+            {
+              ...weeklyChartData.datasets[0],
+              data: dailyRevenue
+            }
+          ]
+        });
+
+      } catch (err) {
+        console.error("Dashboard data failed", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -78,8 +125,7 @@ const Dashboard = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-sm text-gray-500">Weekly Revenue</h4>
-                  <p className="text-2xl font-bold">$24,563</p>
-                  <p className="text-green-500 text-sm">+8.2% from last week</p>
+                  <p className="text-2xl font-bold">${weeklyRevenue}</p>
                 </div>
                 <BarChart2 className="text-blue-500" />
               </div>
@@ -91,8 +137,7 @@ const Dashboard = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-sm text-gray-500">Orders This Week</h4>
-                  <p className="text-2xl font-bold">385</p>
-                  <p className="text-green-500 text-sm">+5.3% from last week</p>
+                  <p className="text-2xl font-bold">{orderCount}</p>
                 </div>
                 <ShoppingCart className="text-blue-500" />
               </div>
@@ -104,8 +149,7 @@ const Dashboard = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-sm text-gray-500">New Customers</h4>
-                  <p className="text-2xl font-bold">42</p>
-                  <p className="text-red-500 text-sm">-2.1% from last week</p>
+                  <p className="text-2xl font-bold">{customerCount}</p>
                 </div>
                 <Users className="text-blue-500" />
               </div>
@@ -117,8 +161,7 @@ const Dashboard = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-sm text-gray-500">Low Stock Items</h4>
-                  <p className="text-2xl font-bold">17</p>
-                  <p className="text-red-500 text-sm">+3 more than last week</p>
+                  <p className="text-2xl font-bold">{lowStockCount}</p>
                 </div>
                 <Box className="text-blue-500" />
               </div>
@@ -132,13 +175,6 @@ const Dashboard = () => {
             <CardContent>
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-lg font-semibold">Weekly Sales Analytics</h4>
-                <div className="space-x-2">
-                  <button className="text-sm font-medium text-blue-600">
-                    Weekly
-                  </button>
-                  <button className="text-sm text-gray-400">Monthly</button>
-                  <button className="text-sm text-gray-400">Yearly</button>
-                </div>
               </div>
               <Line data={weeklyChartData} />
             </CardContent>

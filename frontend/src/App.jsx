@@ -11,8 +11,6 @@ import { store } from "./reduxStore/store";
 import { ToastContainer } from "react-toastify";
 import ProfileDetails from "@components/auth/ProfileDetails";
 import Dashboard from "@components/admin/Dashboard";
-import EditProduct from "@components/admin/EditProduct";
-import EditOrders from "@components/admin/EditOrders";
 import Cart from "@components/order/Cart";
 import Checkout from "@components/order/Checkout";
 
@@ -26,6 +24,8 @@ import ProductManagement from "@components/admin/ProductManagement";
 import CustomerManagement from "@components/admin/CustomerManagement";
 import OrdersManagement from "@components/admin/OrdersManagement";
 import ReorderList from "@components/admin/ReOrderList";
+import AddProduct from "@components/admin/AddProduct";
+import SupplierManagement from "@components/admin/SuppliersManagement";
 
 let persistor = persistStore(store);
 
@@ -110,6 +110,22 @@ const router = createBrowserRouter([
       </ProtectedRoutes>
     ),
   },
+  {
+    path: "/dashboard/add-product",
+    element: (
+      <ProtectedRoutes>
+        <AddProduct/>
+      </ProtectedRoutes>
+    ),
+  },
+  {
+    path: "/dashboard/supplier-management",
+    element: (
+      <ProtectedRoutes>
+        <SupplierManagement/>
+      </ProtectedRoutes>
+    ),
+  },
 
   {
     path: "dashboard/re-orders",
@@ -119,14 +135,7 @@ const router = createBrowserRouter([
       </ProtectedRoutes>
     ),
   },
-  {
-    path: "/admin/orders/edit/:id",
-    element: (
-      <ProtectedRoutes>
-        <EditOrders />
-      </ProtectedRoutes>
-    ),
-  },
+
 ]);
 
 function App() {

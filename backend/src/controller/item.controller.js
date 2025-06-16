@@ -76,10 +76,11 @@ const updateItem = asyncHandler(async (req, res) => {
   }
 
   if (source.productName) item.productName = source.productName;
-  if (source.quantity) item.quantity = source.quantity;
+  if (source.stock) item.stock = source.stock;
   if (source.description) item.description = source.description;
   if (source.category) item.category = source.category;
   if (source.supplier) item.supplier = source.supplier;
+  if (source.price) item.price = source.price;
 
   // Handle image upload
   if (req.file) {
