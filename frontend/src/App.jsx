@@ -31,8 +31,6 @@ import { persistStore } from 'redux-persist';
 // Stripe Elements
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-// right under your imports
-console.log('Stripe key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 let persistor = persistStore(store);
 

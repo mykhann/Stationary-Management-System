@@ -41,6 +41,7 @@ const createOrder = asyncHandler(async (req, res) => {
     updatedOrderItems.push({
       item: dbItem._id,
       quantity: item.quantity,
+      category:dbItem.category
     });
   }
 

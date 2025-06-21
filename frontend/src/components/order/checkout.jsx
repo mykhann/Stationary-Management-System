@@ -72,7 +72,10 @@ const Checkout = () => {
 
       if (paymentIntent.status === 'succeeded') {
         const orderData = {
-          orderItems: cartItems.map(i => ({ item: i._id, quantity: i.quantity })),
+          orderItems: cartItems.map(i => ({
+             item: i._id, quantity: i.quantity ,
+             price: i.price,
+            })),
           shippingAddress: shipping,
           paymentMethod: 'Stripe',
           paymentResult: {
