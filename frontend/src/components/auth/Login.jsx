@@ -38,7 +38,13 @@ const Login = () => {
       if (res.data.success) {
         dispatch(setUser(res.data.user));
         toast.success(res.data.message);
-        navigate("/");
+
+        // ✅ Redirect admin to dashboard, others to home
+        if (res.data.user.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred", {
@@ -49,8 +55,7 @@ const Login = () => {
 
   return (
     <>
-    
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br  px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br px-4">
         <div className="bg-white shadow-xl rounded-lg max-w-md w-full p-8">
           <h2 className="text-3xl font-extrabold text-indigo-700 mb-6 text-center">
             Welcome Back
