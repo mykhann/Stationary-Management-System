@@ -15,7 +15,7 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create a new order (user must be logged in)
-router.post('/create', isAuthenticated, createOrder);
+router.post('/create', createOrder);
 
 // REORDER DETAILS 
 router.get('/reorder', isAuthenticated, getReorder);
@@ -33,7 +33,7 @@ router.get('/:id', isAuthenticated, getOrderById);
 router.put('/:id/status', isAuthenticated, updateOrderStatus);
 
 // Stripe: create PaymentIntent for checkout
-router.post('/create-payment-intent', isAuthenticated, async (req, res) => {
+router.post('/create-payment-intent',async (req, res) => {
   try {
     const { cartItems } = req.body;
 

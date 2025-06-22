@@ -6,11 +6,13 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "concurrently \"nodemon index.js\" \"npm run start:python\"",
+    "start:python": "cd ../forecast-python && venv\\Scripts\\python forecast_api.py"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.6.1",
     "cookie-parser": "^1.4.7",
@@ -24,5 +26,8 @@
     "nodemailer": "^7.0.3",
     "simple-statistics": "^7.8.8",
     "stripe": "^18.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
   }
 }

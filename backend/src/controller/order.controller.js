@@ -8,7 +8,6 @@ import Reorder from "../model/reorder.model.js"
 
 // Create a new order
 const createOrder = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
   const { orderItems, shippingAddress, paymentMethod, paymentResult } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
@@ -41,12 +40,11 @@ const createOrder = asyncHandler(async (req, res) => {
     updatedOrderItems.push({
       item: dbItem._id,
       quantity: item.quantity,
-      category:dbItem.category
+      category: dbItem.category,
     });
   }
 
-  const order = await Order.create({
-    user: userId,
+  const orderData = {
     orderItems: updatedOrderItems,
     totalAmount,
     shippingAddress,
@@ -56,9 +54,15 @@ const createOrder = asyncHandler(async (req, res) => {
       status: paymentResult.status,
       amount: paymentResult.amount,
     } : undefined,
-  });
+  };
 
-  if (req.user.email) {
+  if (req.user && req.user._id) {
+    orderData.user = req.user._id;
+  }
+
+  const order = await Order.create(orderData);
+
+  if (req.user?.email) {
     await sendEmail({
       to: req.user.email,
       subject: 'Order Confirmation',

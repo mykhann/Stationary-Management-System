@@ -1,9 +1,8 @@
 import express from "express";
 import { computePctChangeByCategory } from "../utils/computePctChangeByCategory.js";
-import { encodeSeries } from "../utils/encodeSeries.js";
-import { forecastExpSmooth } from "../utils/encodeSeries.js";
-import { forecastLinear } from "../utils/encodeSeries.js";
+
 import { fetchWeeklyCategoryTotals } from "../utils/fetchWeeklyCategoryTotals.js";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -12,7 +11,6 @@ router.get("/descriptive", async (req, res, next) => {
   try {
     const weeks = parseInt(req.query.weeks) || 8;
     const raw = await fetchWeeklyCategoryTotals(weeks);
-      console.log("RAW:", raw)
     const descriptive = computePctChangeByCategory(raw);
     res.json(descriptive);
   } catch (err) {
@@ -21,25 +19,14 @@ router.get("/descriptive", async (req, res, next) => {
 });
 
 // Predictive Analytics Route
-router.get("/predictive", async (req, res, next) => {
+router.get('/predictive', async (req, res) => {
   try {
-    const weeks = parseInt(req.query.weeks) || 8;
-    const raw = await fetchWeeklyCategoryTotals(weeks);
-    const descriptive = computePctChangeByCategory(raw);
-
-    const forecasts = {};
-    for (const [cat, series] of Object.entries(descriptive)) {
-      const encoded = encodeSeries(series);
-      forecasts[cat] = {
-        linear: forecastLinear(encoded),
-        expSmooth: forecastExpSmooth(encoded)
-      };
-    }
-
-    res.json(forecasts);
+    const response = await axios.get('http://localhost:5001/forecast');
+    res.json(response.data);
   } catch (err) {
-    next(err);
+    res.status(500).json({ error: 'Error fetching forecast', details: err.message });
   }
 });
+
 
 export default router;
