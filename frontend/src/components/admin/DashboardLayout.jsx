@@ -20,7 +20,7 @@ const DashboardLayout = () => {
             ☰
           </button>
         </div>
-        <Outlet /> {/* Route content goes here */}
+        <Outlet /> 
       </main>
     </div>
   );

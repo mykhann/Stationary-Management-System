@@ -1,7 +1,18 @@
 import React from "react";
-import { Link } from "react-router-dom";
-
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../reduxStore/authSlice";
 const DashboardSideBar = ({ closeSidebar }) => {
+  const dispatch=useDispatch()
+  const navigate = useNavigate();
+  const { user } = useSelector((store) => store.auth);
+  const handleLogout = (e) => {
+      e.preventDefault();
+      dispatch(setUser(null));
+      navigate("/login");
+    };
+
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Inventory Management", path: "/dashboard/product-management" },
@@ -9,9 +20,8 @@ const DashboardSideBar = ({ closeSidebar }) => {
     { name: "Order Management", path: "/dashboard/order-management" },
     { name: "Suppliers Management", path: "/dashboard/supplier-management" },
     { name: "Re-Orders", path: "/dashboard/re-orders" },
-    { name: "Analytics", path: "/dashboard/analytics" },
-    { name: "Predictive Insights", path: "/dashboard/predictive-insights" },
-
+    { name: "Predictive Insights", path: "/dashboard/analytics" },
+    { name: "Descriptive Insights", path: "/dashboard/descriptive" },
   ];
 
   return (
@@ -34,6 +44,16 @@ const DashboardSideBar = ({ closeSidebar }) => {
           </Link>
         ))}
       </nav>
+
+      {/* Logout Button */}
+      <div className="pt-8 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="w-full text-left p-2 text-red-400 hover:bg-gray-800 rounded"
+        >
+          🚪 Logout
+        </button>
+      </div>
     </aside>
   );
 };

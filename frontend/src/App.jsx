@@ -31,6 +31,8 @@ import { persistStore } from 'redux-persist';
 // Stripe Elements
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import PredictveAnalytics from '@components/admin/PredictiveAnalytics';
+import DescriptiveAnalysis from '@components/admin/Descriptive';
 
 let persistor = persistStore(store);
 
@@ -65,6 +67,8 @@ const router = createBrowserRouter([
   { path: '/dashboard/add-product', element: <ProtectedRoutes><AddProduct /></ProtectedRoutes> },
   { path: '/dashboard/supplier-management', element: <ProtectedRoutes><SupplierManagement /></ProtectedRoutes> },
   { path: '/dashboard/re-orders', element: <ProtectedRoutes><ReorderList /></ProtectedRoutes> },
+  { path: '/dashboard/analytics', element: <ProtectedRoutes><PredictveAnalytics /></ProtectedRoutes> },
+  { path: '/dashboard/descriptive', element: <ProtectedRoutes><DescriptiveAnalysis /></ProtectedRoutes> },
 ]);
 
 function App() {

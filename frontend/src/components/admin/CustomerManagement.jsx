@@ -15,28 +15,32 @@ const CustomerManagement = () => {
   useEffect(() => {
     const fetchCustomersFromOrders = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/v1/order/get`,{
-          withCredentials:true
-          
+        const response = await axios.get(`${BASE_URL}/api/v1/order/get`, {
+          withCredentials: true,
         });
-        const orders = response.data.orders;
+        const orders = response.data.orders || [];
 
         const customerMap = new Map();
 
         orders.forEach((order) => {
           const user = order.user;
+          const shipping = order.shippingAddress;
+
+          // Ensure both user and user._id exist
+          if (!user || !user._id) return;
+
           const customerId = user._id;
 
           if (!customerMap.has(customerId)) {
             customerMap.set(customerId, {
               id: customerId,
-              name: order.shippingAddress.fullName || "N/A",
-              email: user.email,
-              phone: user.phone,
-              address: order.shippingAddress.address || "",
+              name: shipping?.fullName || "N/A",
+              email: user.email || "N/A",
+              phone: user.phone || "N/A",
+              address: shipping?.address || "N/A",
               orders: 1,
               totalSpend: order.totalAmount || 0,
-              registrationDate: order.createdAt,
+              registrationDate: order.createdAt || "N/A",
             });
           } else {
             const existing = customerMap.get(customerId);
@@ -69,7 +73,10 @@ const CustomerManagement = () => {
           <div className="w-64 bg-gray-900 text-white">
             <DashboardSideBar closeSidebar={closeSidebar} />
           </div>
-          <div className="flex-1 bg-black bg-opacity-50" onClick={closeSidebar} />
+          <div
+            className="flex-1 bg-black bg-opacity-50"
+            onClick={closeSidebar}
+          />
         </div>
       )}
 
@@ -84,7 +91,9 @@ const CustomerManagement = () => {
         </div>
 
         <main className="p-6">
-          <h2 className="text-2xl font-semibold mb-6 hidden md:block">Customer Management</h2>
+          <h2 className="text-2xl font-semibold mb-6 hidden md:block">
+            Customer Management
+          </h2>
 
           {loading ? (
             <p>Loading customers...</p>
@@ -98,7 +107,6 @@ const CustomerManagement = () => {
                     <th className="p-4 text-left">Phone</th>
                     <th className="p-4 text-left">Orders</th>
                     <th className="p-4 text-left">Total Spend</th>
-                    <th className="p-4 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -108,12 +116,10 @@ const CustomerManagement = () => {
                       <td className="p-4">{customer.email}</td>
                       <td className="p-4">{customer.phone}</td>
                       <td className="p-4">{customer.orders}</td>
-                      <td className="p-4">Rs. {customer.totalSpend.toLocaleString()}</td>
                       <td className="p-4">
-                        <button className="flex items-center text-blue-600 hover:underline">
-                          <Eye className="w-4 h-4 mr-1" /> View
-                        </button>
+                        Rs. {customer.totalSpend.toLocaleString()}
                       </td>
+                      
                     </tr>
                   ))}
                 </tbody>

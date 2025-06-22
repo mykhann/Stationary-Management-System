@@ -5,109 +5,100 @@ from prophet import Prophet
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
+import numpy as np
 
 app = Flask(__name__)
 
-# Store forecast results globally
-forecast_data = {}
+data_store = {}
 
-def run_forecast():
-    global forecast_data
+# MongoDB configuration
+MONGO_URI = "mongodb+srv://37181:PguuWu7oSsTqjUK7@chaibackend.cnq4lhz.mongodb.net"
+DB_NAME = "Stationary-Management"
 
-    client = MongoClient("mongodb+srv://37181:PguuWu7oSsTqjUK7@chaibackend.cnq4lhz.mongodb.net")
-    db = client["Stationary-Management"]
+# Forecast parameters
+HISTORY_WEEKS = 8
+FUTURE_WEEKS = 1
+INTERVAL_WIDTH = 0.95
+# Fallback bounds factor
+FALLBACK_FACTOR = 0.2  # 20%
 
-    start_date = datetime.now() - timedelta(weeks=8)
-
-    pipeline = [
-        {"$match": {"createdAt": {"$gte": start_date}}},
-        {"$unwind": "$orderItems"},
-        {
-            "$lookup": {
-                "from": "items",
-                "localField": "orderItems.item",
-                "foreignField": "_id",
-                "as": "itemDetails"
-            }
-        },
-        {"$unwind": "$itemDetails"},
-        {
-            "$project": {
-                "category": "$itemDetails.category",
-                "quantity": "$orderItems.quantity",
-                "createdAt": 1
-            }
-        },
-        {
-            "$addFields": {
-                "week": {"$isoWeek": "$createdAt"},
-                "year": {"$isoWeekYear": "$createdAt"}
-            }
-        },
-        {
-            "$group": {
-                "_id": {
-                    "category": "$category",
-                    "week": "$week",
-                    "year": "$year"
-                },
-                "total": {"$sum": "$quantity"},
-                "date": {"$min": "$createdAt"}
-            }
-        },
-        {"$sort": {"_id.year": 1, "_id.week": 1}}
-    ]
-
-    results = list(db.orders.aggregate(pipeline))
-
-    data = [
-        {
-            "category": doc["_id"]["category"],
-            "ds": doc["date"],
-            "y": doc["total"]
-        }
-        for doc in results
-    ]
-
-    df = pd.DataFrame(data)
-
-    if df.empty or "category" not in df.columns:
-        forecast_data = {"message": "No forecast data available"}
-        return
-
-    forecasts = {}
-
-    for category in df["category"].unique():
-        df_cat = df[df["category"] == category][["ds", "y"]].sort_values("ds")
-
-        if len(df_cat) >= 2:
-            model = Prophet()
-            model.fit(df_cat)
-            future = model.make_future_dataframe(periods=1, freq="W")  # Predict only 1 week
-            forecast = model.predict(future)
-
-            row = forecast.tail(1).iloc[0]  # Get last forecast row
-            forecasts[category] = [{
-                "week": row["ds"].strftime("%Y-%m-%d"),
-                "forecast": round(max(0, row["yhat"]), 1),
-                "lower": round(max(0, row["yhat_lower"]), 1),
-                "upper": round(max(0, row["yhat_upper"]), 1)
-            }]
-
-    forecast_data = forecasts
-    print("Forecast updated at", datetime.now())
+# Scheduler setup
+scheduler = BackgroundScheduler()
+logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
 @app.route("/forecast", methods=["GET"])
 def get_forecast():
-    return jsonify(forecast_data)
+    return jsonify(data_store)
 
-if __name__ == "__main__":
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(run_forecast, trigger='cron', day_of_week='sun', hour=0, minute=0)
+def run_forecast():
+    global data_store
+    client = MongoClient(MONGO_URI)
+    db = client[DB_NAME]
+
+    start_date = datetime.now() - timedelta(weeks=HISTORY_WEEKS)
+    pipeline = [
+        {"$match": {"createdAt": {"$gte": start_date}}},
+        {"$unwind": "$orderItems"},
+        {"$lookup": {
+            "from": "items",
+            "localField": "orderItems.item",
+            "foreignField": "_id",
+            "as": "itemDetails"
+        }},
+        {"$unwind": "$itemDetails"},
+        {"$project": {"category": "$itemDetails.category", "quantity": "$orderItems.quantity", "createdAt": 1}},
+        {"$addFields": {"week": {"$isoWeek": "$createdAt"}, "year": {"$isoWeekYear": "$createdAt"}}},
+        {"$group": {
+            "_id": {"category": "$category", "week": "$week", "year": "$year"},
+            "total": {"$sum": "$quantity"},
+            "ds": {"$min": "$createdAt"}
+        }},
+        {"$sort": {"_id.year": 1, "_id.week": 1}}
+    ]
+    results = list(db.orders.aggregate(pipeline))
+
+    records = [{"category": r["_id"]["category"], "ds": r["ds"], "y": r["total"]} for r in results]
+    df = pd.DataFrame(records)
+    if df.empty:
+        data_store = {"message": "No forecast data available"}
+        return
+
+    forecasts = {}
+    for cat, grp in df.groupby("category"):
+        df_cat = grp.sort_values("ds")[['ds','y']]
+        if len(df_cat) < 2:
+            continue
+
+        model = Prophet(interval_width=INTERVAL_WIDTH,
+                        weekly_seasonality=False,
+                        yearly_seasonality=False,
+                        daily_seasonality=False)
+        model.fit(df_cat)
+
+        future = model.make_future_dataframe(periods=FUTURE_WEEKS, freq='W')
+        forecast_df = model.predict(future)
+        row = forecast_df.iloc[-1]
+        yhat = float(row['yhat'])
+        lower = float(row['yhat_lower'])
+        upper = float(row['yhat_upper'])
+
+        # Fallback if lower == upper or invalid
+        if np.isclose(lower, upper):
+            lower = yhat * (1 - FALLBACK_FACTOR)
+            upper = yhat * (1 + FALLBACK_FACTOR)
+
+        forecasts[cat] = [{
+            'week': future['ds'].iloc[-1].strftime('%Y-%m-%d'),
+            'forecast': round(yhat, 1),
+            'lower': round(max(0, lower), 1),
+            'upper': round(max(0, upper), 1)
+        }]
+
+    data_store = forecasts
+    print(f"[Forecast] updated at {datetime.now().isoformat()}")
+
+if __name__ == '__main__':
+    scheduler.add_job(run_forecast, 'cron', day_of_week='sun', hour=0, minute=0)
     scheduler.start()
-
-    run_forecast()  # Run once at startup
-
-    logging.getLogger("apscheduler").setLevel(logging.ERROR)
-
-    app.run(debug=True, port=5001)
+    run_forecast()
+    app.run(port=5001, debug=True)
