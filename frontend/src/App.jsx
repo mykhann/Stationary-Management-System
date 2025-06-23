@@ -33,6 +33,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PredictveAnalytics from '@components/admin/PredictiveAnalytics';
 import DescriptiveAnalysis from '@components/admin/Descriptive';
+import LatestArrivals from '@components/products/LatestArrivals';
 
 let persistor = persistStore(store);
 
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
   { path: '/signup', element: <Layout><Signup /></Layout> },
   { path: '/products/:id', element: <Layout><ProductDetails /></Layout> },
   { path: '/profile', element: <Layout><ProfileDetails /></Layout> },
+  { path: '/latest', element: <Layout><LatestArrivals /></Layout> },
   { path: '/cart', element: <Cart /> },
   {
     path: '/checkout',

@@ -31,7 +31,7 @@ const DescriptiveAnalysis = () => {
       </div>
 
       {/* Main */}
-      <div className="flex-1 p-4 md:ml-60">
+      <div className="flex-1 p-4 ">
         {/* Header with Hamburger on Left */}
         <div className="flex items-center justify-between mb-4 md:justify-start md:gap-4">
           <button

@@ -43,7 +43,7 @@ const PredictiveAnalytics = () => {
       )}
 
       {/* Main content */}
-      <div className="flex-1 w-full md:ml-60">
+      <div className="flex-1 w-full ">
         {/* Mobile header */}
         <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
           <button onClick={() => setSidebarOpen(true)}>

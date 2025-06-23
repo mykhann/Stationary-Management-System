@@ -111,63 +111,52 @@ const getOrderById = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, order });
 });
 
-// Update order status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  const validStatuses = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  const validStatuses = ["Processing","Shipped","Delivered","Cancelled"];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ success: false, message: "Invalid status" });
   }
 
-  const order = await Order.findById(id).populate('user').populate('orderItems.item');
+  const order = await Order.findById(id)
+    .populate("user")
+    .populate("orderItems.item");
   if (!order) {
     return res.status(404).json({ success: false, message: "Order not found" });
   }
 
   const prevStatus = order.orderStatus;
-  order.orderStatus = status;
-  await order.save();
+  await Order.findByIdAndUpdate(id, { orderStatus: status });
 
-  // Deduct quantity when moving to 'Processing' (existing logic)
-  if (status === 'Processing' && prevStatus !== 'Processing') {
+  if (status === "Processing" && prevStatus !== "Processing") {
     for (const item of order.orderItems) {
+      if (!item.item) continue;
       const dbItem = await Item.findById(item.item._id);
-      if (dbItem.quantity < item.quantity) {
+      if (!dbItem || dbItem.quantity < item.quantity) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient quantity for item: ${dbItem.productName}`,
+          message: `Insufficient quantity for item: ${dbItem?.productName || "Unknown"}`
         });
       }
       dbItem.quantity -= item.quantity;
       await dbItem.save();
-
-      
     }
   }
 
-  if (status === 'Delivered' && prevStatus !== 'Delivered') {
-    for (const item of order.orderItems) {
-      await IssuanceLog.create({
-        itemId: item.item._id,
-        userId: order.user._id,
-        quantity: item.quantity,
-        issuedBy: req.user._id,  
-        issuedAt: new Date(),
-      });
-    }
-  }
 
-  // Send notification emails on 'Processing' or 'Delivered'
-  if (['Processing', 'Delivered'].includes(status) && order.user.email) {
+  // Only send emails (if email available)
+  if (["Processing","Delivered"].includes(status) && order.user?.email) {
     const subject = `Your Order has been ${status}`;
-    const text = `Hello ${order.user.UserName || ''},\n\nYour order with ID ${order._id} is now marked as ${status}.\n\nThank you for shopping with us!\n\n- Your Team`;
-    await sendEmail({ to: order.user.email, subject, text });
+    const text = `Hello ${order.user.UserName || ""},\nYour order ${order._id} is now ${status}.\nThank you!`;
+    sendEmail({ to: order.user.email, subject, text }).catch(console.error);
   }
 
   res.status(200).json({ success: true, message: `Order marked as ${status}` });
 });
+
+
 
 // REORDER DETAILS 
 const getReorder=asyncHandler(async(req,res)=>{

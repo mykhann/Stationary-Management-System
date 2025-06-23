@@ -54,7 +54,7 @@ const ReorderList = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 w-full md:ml-64">
+      <div className="flex-1 w-full ">
         {/* Mobile Header */}
         <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
           <button onClick={toggleSidebar}>

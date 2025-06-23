@@ -15,11 +15,17 @@ const OrdersTable = ({ orders, onStatusChange }) => {
     }
 
     if (searchTerm) {
-      updatedOrders = updatedOrders.filter((order) =>
-        order.shippingAddress.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order._id.includes(searchTerm)
-      );
+      updatedOrders = updatedOrders.filter((order) => {
+        const fullName = order.shippingAddress?.fullName?.toLowerCase() || "";
+        const email = order.user?.email?.toLowerCase() || "";
+        const id = order._id || "";
+
+        return (
+          fullName.includes(searchTerm.toLowerCase()) ||
+          email.includes(searchTerm.toLowerCase()) ||
+          id.includes(searchTerm)
+        );
+      });
     }
 
     setFilteredOrders(updatedOrders);
@@ -57,12 +63,12 @@ const OrdersTable = ({ orders, onStatusChange }) => {
         />
 
         <div className="flex gap-2 flex-wrap">
-          {['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].map(status => (
+          {["All", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
               className={`px-4 py-2 text-sm rounded-full border ${
-                filter === status ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
+                filter === status ? "bg-blue-600 text-white" : "bg-white text-gray-700"
               }`}
             >
               {status}
@@ -93,13 +99,13 @@ const OrdersTable = ({ orders, onStatusChange }) => {
               {filteredOrders.map((order) => (
                 <tr key={order._id} className="border-b hover:bg-gray-50">
                   <td className="p-4 break-all max-w-xs">{order._id}</td>
-                  <td className="p-4">{order.shippingAddress.fullName}</td>
-                  <td className="p-4">{order.shippingAddress.address}</td>
+                  <td className="p-4">{order.shippingAddress?.fullName || "N/A"}</td>
+                  <td className="p-4">{order.shippingAddress?.address || "N/A"}</td>
                   <td className="p-4">{formatDate(order.createdAt)}</td>
                   <td className="p-4 text-xs">
-                    {order.orderItems.map((item, index) => (
+                    {order.orderItems?.map((item, index) => (
                       <div key={index}>
-                        {item.item?.productName || 'Unknown'} × {item.quantity}
+                        {item.item?.productName || "Unknown"} × {item.quantity}
                       </div>
                     ))}
                   </td>
@@ -107,7 +113,9 @@ const OrdersTable = ({ orders, onStatusChange }) => {
                   <td className="p-4">{order.paymentMethod}</td>
                   <td className="p-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(order.orderStatus)}`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                        order.orderStatus
+                      )}`}
                     >
                       {order.orderStatus}
                     </span>
@@ -124,7 +132,7 @@ const OrdersTable = ({ orders, onStatusChange }) => {
 
                     {dropdownOpen === order._id && (
                       <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-10">
-                        {['Cancelled', 'Processing', 'Shipped', 'Delivered'].map(status => (
+                        {["Cancelled", "Processing", "Shipped", "Delivered"].map((status) => (
                           <button
                             key={status}
                             onClick={() => {

@@ -24,17 +24,23 @@ const OrdersManagement = () => {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      await axios.put(
-        `${BASE_URL}/api/v1/order/${orderId}/status`,
-        { status: newStatus },
-        { withCredentials: true }
-      );
-      fetchOrders();
-    } catch (error) {
-      console.error("Failed to update status:", error.response?.data || error.message);
-    }
-  };
+  try {
+    await axios.put(
+      `${BASE_URL}/api/v1/order/${orderId}/status`,
+      { status: newStatus },
+      { withCredentials: true }
+    );
+
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order._id === orderId ? { ...order, orderStatus: newStatus } : order
+      )
+    );
+  } catch (error) {
+    console.error("Failed to update status:", error.response?.data || error.message);
+  }
+};
+
 
   useEffect(() => {
     fetchOrders();
@@ -55,7 +61,7 @@ const OrdersManagement = () => {
         </div>
       )}
 
-      <div className="flex-1 w-full md:ml-64">
+      <div className="flex-1 w-full ">
         <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
           <button onClick={toggleSidebar}>
             <Menu className="w-6 h-6 text-gray-700" />
@@ -64,10 +70,11 @@ const OrdersManagement = () => {
           <div className="w-6" />
         </div>
 
-        <main className="p-4 sm:p-6">
-          <h2 className="text-2xl font-semibold mb-4 hidden md:block">Orders Management</h2>
-          <OrdersTable orders={orders} onStatusChange={handleStatusChange} />
-        </main>
+        <main className="p-4 sm:p-6 max-w-6xl md:ml-2 mx-auto w-full">
+  <h2 className="text-2xl font-semibold mb-4 hidden md:block">Orders Management</h2>
+  <OrdersTable orders={orders} onStatusChange={handleStatusChange} />
+</main>
+
       </div>
     </div>
   );

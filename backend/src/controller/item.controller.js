@@ -31,7 +31,7 @@ const createItem = asyncHandler(async (req, res) => {
     category,
     price,
     avatar: imageUrl ? [imageUrl] : [],
-    supplier, // Linking the item to the supplier
+    supplier, 
   });
 
   // Now update the supplier to include this item
@@ -113,10 +113,27 @@ const deleteItem = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Item deleted successfully' });
 });
 
+const getLatestArrivals=asyncHandler(async(req,res)=>{
+  const latestArrivals=await Item.find().sort({createdAt:-1}).limit(10);
+  if (!latestArrivals){
+    return res.status(404).json({
+      status:false,
+      message:"no items found"
+    });
+
+  }
+  res.status(200).json({
+    success:true,
+    latestArrivals
+  })
+
+})
+
 export {
     createItem,
     updateItem,
     deleteItem,
     getAllItems,
-    getItemById
+    getItemById,
+    getLatestArrivals
 }

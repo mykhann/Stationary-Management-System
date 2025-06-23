@@ -99,12 +99,12 @@ const SupplierManagement = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <div className="flex flex-col  md:flex-row min-h-screen bg-gray-100">
       <div className="hidden md:block w-full md:w-64 bg-gray-900 text-white">
         <DashboardSideBar />
       </div>
 
-      <div className="flex-1 p-4 sm:p-6 md:ml-64">
+      <div className="flex-1 p-4 sm:p-6 ">
         <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-6 gap-4">
           <h2 className="text-xl sm:text-2xl font-semibold">
             Supplier Management

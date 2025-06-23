@@ -81,7 +81,7 @@ const CustomerManagement = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 w-full md:ml-64">
+      <div className="flex-1 w-full ">
         <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
           <button onClick={toggleSidebar}>
             <Menu className="w-6 h-6 text-gray-700" />

@@ -9,8 +9,10 @@ const Products = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Map display name to actual category value
+  const itemsPerPage = 8;
+
   const categories = [
     { label: "All", value: "All" },
     { label: "Paper Products", value: "paper" },
@@ -30,25 +32,42 @@ const Products = () => {
     return matchesCategory && matchesSearch;
   });
 
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="max-w-7xl mx-auto p-4 pt-24">
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        {/* Search Bar */}
         <input
           type="text"
           placeholder="Search products by name..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
           className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
 
-        {/* Category Buttons */}
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <button
               key={category.value}
-              onClick={() => setSelectedCategory(category.value)}
+              onClick={() => {
+                setSelectedCategory(category.value);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-full border text-sm font-medium ${
                 selectedCategory === category.value
                   ? "bg-indigo-600 text-white"
@@ -62,9 +81,9 @@ const Products = () => {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {paginatedProducts.length > 0 ? (
+          paginatedProducts.map((product) => (
             <ProductCard key={product._id} products={product} />
           ))
         ) : (
@@ -73,6 +92,44 @@ const Products = () => {
           </p>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 gap-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          {[...Array(totalPages)].map((_, idx) => {
+            const page = idx + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-4 py-2 border rounded-md ${
+                  page === currentPage
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </section>
   );
 };

@@ -70,11 +70,18 @@ const Navbar = () => {
                   Products
                 </Link>
                 <Link
+                  to="/latest"
+                  className="hover:text-indigo-600 transition px-3 py-2 rounded-md"
+                >
+                  Latest Arrivals
+                </Link>
+                <Link
                   to="/about"
                   className="hover:text-indigo-600 transition px-3 py-2 rounded-md"
                 >
                   About
                 </Link>
+                
                 <Link
                   to="/contact"
                   className="hover:text-indigo-600 transition px-3 py-2 rounded-md"
@@ -94,7 +101,7 @@ const Navbar = () => {
                   onClick={toggleProfileMenu}
                   className="h-7 w-7 text-indigo-600 cursor-pointer hover:text-indigo-800 transition"
                 />
-                
+
                 {profileMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2 text-gray-700">
                     <Link
@@ -202,6 +209,13 @@ const Navbar = () => {
               >
                 Products
               </Link>
+               <Link
+                to="/latest"
+                onClick={() => setIsOpen(false)}
+                className="block px-6 py-3 text-gray-700 hover:bg-indigo-100 transition font-medium"
+              >
+                Latest Arrivals
+              </Link>
               <Link
                 to="/about"
                 onClick={() => setIsOpen(false)}
@@ -209,6 +223,7 @@ const Navbar = () => {
               >
                 About
               </Link>
+             
               <Link
                 to="/contact"
                 onClick={() => setIsOpen(false)}
@@ -216,6 +231,8 @@ const Navbar = () => {
               >
                 Contact
               </Link>
+              
+              
             </>
           )}
         </div>
