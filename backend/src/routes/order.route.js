@@ -7,6 +7,9 @@ import {
   getOrderById,
   updateOrderStatus,
   getReorder,
+  deleteOrder,
+  reorderStatusChange,
+  DeleteReorder,
 } from '../controller/order.controller.js';
 import { isAuthenticated } from '../middlewares/isAuthenticated.middleware.js';
 import Item from '../model/item.model.js';
@@ -31,6 +34,16 @@ router.get('/:id', isAuthenticated, getOrderById);
 
 // Update order status (admin only)
 router.put('/:id/status', isAuthenticated, updateOrderStatus);
+
+// Delete Order (admin only) 
+
+router.delete("/:id/delete",deleteOrder)
+
+// ReOrder Status Change 
+router.patch("/:id/reorder/update",reorderStatusChange)
+
+// ReOrder Deleted 
+router.delete("/:id/reorder/delete",DeleteReorder)
 
 // Stripe: create PaymentIntent for checkout
 router.post('/create-payment-intent',async (req, res) => {

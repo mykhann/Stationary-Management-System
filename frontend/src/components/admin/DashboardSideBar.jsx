@@ -16,18 +16,19 @@ const DashboardSideBar = ({ closeSidebar }) => {
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Inventory Management", path: "/dashboard/product-management" },
-    { name: "Customer Management", path: "/dashboard/customer-management" },
     { name: "Order Management", path: "/dashboard/order-management" },
     { name: "Suppliers Management", path: "/dashboard/supplier-management" },
-    { name: "Re-Orders", path: "/dashboard/re-orders" },
     { name: "Predictive Insights", path: "/dashboard/analytics" },
     { name: "Descriptive Insights", path: "/dashboard/descriptive" },
+    { name: "Customers List", path: "/dashboard/customer-management" },
+    { name: "Re-Orders List", path: "/dashboard/re-orders" },
   ];
 
   return (
     <aside className="min-h-screen overflow-y-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white">StationeryPro</h1>
+        <Link to="/dashboard">        <h1 className="text-2xl font-bold text-white" >StationeryPro</h1>
+</Link>
         <button onClick={closeSidebar} className="md:hidden text-white">
           ✕
         </button>

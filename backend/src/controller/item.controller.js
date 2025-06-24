@@ -114,7 +114,7 @@ const deleteItem = asyncHandler(async (req, res) => {
 });
 
 const getLatestArrivals=asyncHandler(async(req,res)=>{
-  const latestArrivals=await Item.find().sort({createdAt:-1}).limit(10);
+  const latestArrivals=await Item.find().sort({createdAt:-1}).limit(6);
   if (!latestArrivals){
     return res.status(404).json({
       status:false,

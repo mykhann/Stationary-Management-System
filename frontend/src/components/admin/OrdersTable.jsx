@@ -1,160 +1,180 @@
-import React, { useEffect, useState } from "react";
-import { MoreVertical } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Menu, Trash2 } from "lucide-react";
+import BASE_URL from "../../apiConfig";
+import DashboardSideBar from "./DashboardSideBar";
 
-const OrdersTable = ({ orders, onStatusChange }) => {
-  const [filteredOrders, setFilteredOrders] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("All");
+const STATUS_OPTIONS = ["Ordered", "Received", "Cancelled"];
+
+const ReorderList = () => {
+  const [reorders, setReorders] = useState([]);
+  const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    let updatedOrders = [...orders];
+    fetchReorders();
+  }, []);
 
-    if (filter !== "All") {
-      updatedOrders = updatedOrders.filter((order) => order.orderStatus === filter);
-    }
-
-    if (searchTerm) {
-      updatedOrders = updatedOrders.filter((order) => {
-        const fullName = order.shippingAddress?.fullName?.toLowerCase() || "";
-        const email = order.user?.email?.toLowerCase() || "";
-        const id = order._id || "";
-
-        return (
-          fullName.includes(searchTerm.toLowerCase()) ||
-          email.includes(searchTerm.toLowerCase()) ||
-          id.includes(searchTerm)
-        );
+  const fetchReorders = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/v1/order/reorder`, {
+        withCredentials: true,
       });
+      if (Array.isArray(response.data.reorder)) {
+        setReorders(response.data.reorder);
+      } else {
+        setError("Invalid response format");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch reorders.");
     }
-
-    setFilteredOrders(updatedOrders);
-  }, [orders, searchTerm, filter]);
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB") + " " + date.toLocaleTimeString();
   };
 
-  const getStatusBadgeColor = (status) => {
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/api/v1/order/${id}/reorder/delete`, {
+        withCredentials: true,
+      });
+      setReorders((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete reorder.");
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/api/v1/order/${id}/reorder/update`,
+        { status: newStatus },
+        { withCredentials: true }
+      );
+      setReorders((prev) =>
+        prev.map((r) => (r._id === id ? response.data.reorder : r))
+      );
+    } catch (err) {
+      console.error("Status update failed:", err);
+      alert("Failed to update status.");
+    }
+  };
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const getStatusColor = (status) => {
     switch (status) {
+      case "Ordered":
+        return "bg-yellow-100 text-yellow-800";
+      case "Received":
+        return "bg-green-100 text-green-800";
       case "Cancelled":
-        return "bg-red-100 text-red-600";
-      case "Processing":
-        return "bg-yellow-100 text-yellow-700";
-      case "Shipped":
-        return "bg-blue-100 text-blue-600";
-      case "Delivered":
-        return "bg-green-100 text-green-700";
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <>
-      <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
-        <input
-          type="text"
-          placeholder="Search by name, email or ID"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm w-full sm:w-64"
-        />
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="hidden md:block w-64 bg-gray-900 text-white">
+        <DashboardSideBar closeSidebar={closeSidebar} />
+      </div>
 
-        <div className="flex gap-2 flex-wrap">
-          {["All", "Processing", "Shipped", "Delivered", "Cancelled"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilter(status)}
-              className={`px-4 py-2 text-sm rounded-full border ${
-                filter === status ? "bg-blue-600 text-white" : "bg-white text-gray-700"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="w-64 bg-gray-900 text-white">
+            <DashboardSideBar closeSidebar={closeSidebar} />
+          </div>
+          <div className="flex-1 bg-black bg-opacity-50" onClick={closeSidebar} />
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 md:hidden bg-white shadow">
+          <button onClick={toggleSidebar}>
+            <Menu className="w-6 h-6 text-gray-700" />
+          </button>
+          <h2 className="text-lg font-semibold text-gray-800">Reorders</h2>
+          <div className="w-6" />
+        </div>
+
+        {/* Content */}
+        <div className="p-4 md:p-6">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+            Reorder Management
+          </h2>
+
+          {error && <p className="text-red-600 mb-4">{error}</p>}
+
+          {reorders.length === 0 && !error ? (
+            <p className="text-gray-600">No reorders found.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {reorders.map((reorder) => (
+                <div
+                  key={reorder._id}
+                  className="bg-white rounded-xl shadow p-4 border border-gray-200"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-sm text-gray-700 font-medium">
+                      {reorder._id}
+                    </div>
+                    <button
+                      onClick={() => handleDelete(reorder._id)}
+                      className="text-red-500 hover:text-red-700"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-gray-500 mb-2">
+                    Created: {new Date(reorder.createdAt).toLocaleDateString()}
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-semibold">Supplier:</span>{" "}
+                      {reorder.supplierId?.name || "N/A"}
+                    </div>
+                    <div>
+                      <span className="font-semibold">Item ID:</span> {reorder.itemId}
+                    </div>
+                    <div>
+                      <span className="font-semibold">Stock:</span> {reorder.stock}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Status:</span>
+                      <select
+                        value={reorder.status}
+                        onChange={(e) =>
+                          handleStatusChange(reorder._id, e.target.value)
+                        }
+                        className={`text-xs rounded px-2 py-1 border ${getStatusColor(
+                          reorder.status
+                        )}`}
+                      >
+                        {STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="overflow-x-auto bg-white shadow-md rounded-2xl">
-        {filteredOrders.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">No orders found for selected filter.</div>
-        ) : (
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
-              <tr>
-                <th className="p-4 text-left">Order ID</th>
-                <th className="p-4 text-left">Customer</th>
-                <th className="p-4 text-left">Address</th>
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Items</th>
-                <th className="p-4 text-left">Total</th>
-                <th className="p-4 text-left">Payment</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order._id} className="border-b hover:bg-gray-50">
-                  <td className="p-4 break-all max-w-xs">{order._id}</td>
-                  <td className="p-4">{order.shippingAddress?.fullName || "N/A"}</td>
-                  <td className="p-4">{order.shippingAddress?.address || "N/A"}</td>
-                  <td className="p-4">{formatDate(order.createdAt)}</td>
-                  <td className="p-4 text-xs">
-                    {order.orderItems?.map((item, index) => (
-                      <div key={index}>
-                        {item.item?.productName || "Unknown"} × {item.quantity}
-                      </div>
-                    ))}
-                  </td>
-                  <td className="p-4">Rs. {order.totalAmount}</td>
-                  <td className="p-4">{order.paymentMethod}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                        order.orderStatus
-                      )}`}
-                    >
-                      {order.orderStatus}
-                    </span>
-                  </td>
-                  <td className="p-4 relative">
-                    <button
-                      onClick={() =>
-                        setDropdownOpen(dropdownOpen === order._id ? null : order._id)
-                      }
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-
-                    {dropdownOpen === order._id && (
-                      <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-10">
-                        {["Cancelled", "Processing", "Shipped", "Delivered"].map((status) => (
-                          <button
-                            key={status}
-                            onClick={() => {
-                              onStatusChange(order._id, status);
-                              setDropdownOpen(null);
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                          >
-                            {status}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 
-export default OrdersTable;
+export default ReorderList;

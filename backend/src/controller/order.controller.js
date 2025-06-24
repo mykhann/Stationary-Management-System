@@ -171,6 +171,64 @@ const getReorder=asyncHandler(async(req,res)=>{
     success:true,
     reorder
   })
+});
+
+// const change status 
+const reorderStatusChange=asyncHandler(async(req,res)=>{
+const {id}=req.params;
+const {status}=req.body;
+const reorder=await Reorder.findByIdAndUpdate(
+  id,
+  {status},
+  {new:true,runValidators:true}
+  
+)
+if (!reorder){
+  return res.status(404).json({
+    success:false,
+    message:"No order Found"
+  })
+}
+res.status(200).json({
+  success:true,
+  reorder
+})
+});
+
+// Delete Reorder 
+
+const DeleteReorder=asyncHandler(async(req,res)=>{
+  const {id}=req.params;
+  const reorder=await Reorder.findByIdAndDelete(id);
+  if (!reorder){
+    return res.status(404).json({
+      success:false,
+      message:"Not found "
+    })
+  }
+  res.status(200).json({
+    success:true,
+    message:"Deleted Re-order Successfully"
+  })
+})
+
+
+
+const deleteOrder=asyncHandler(async(req,res)=>{
+  const {id}=req.params;
+  const order= await Order.findByIdAndDelete(id);
+  if (!order){
+    return res.status(404).json({
+      success:false,
+      message:"No item found"
+    })
+  }
+  res.status(200).json({
+    success:true,
+    message:"Order Deleted Successfully"
+  })
+
+
 })
 export {
   createOrder,
@@ -178,5 +236,8 @@ export {
   getUserOrders,
   getOrderById,
   updateOrderStatus,
-  getReorder
+  getReorder,
+  deleteOrder,
+  reorderStatusChange,
+  DeleteReorder
 };

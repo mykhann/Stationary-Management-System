@@ -17,8 +17,8 @@ const reorderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'ordered', 'received', 'cancelled'],
-    default: 'pending',
+    enum: [ 'ordered', 'received', 'cancelled'],
+    default: 'ordered',
   },
   createdAt: {
     type: Date,
