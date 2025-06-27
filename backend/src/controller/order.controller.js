@@ -3,7 +3,6 @@ import Order from '../model/order.model.js';
 import Item from "../model/item.model.js"
 import { reOrderHelper } from '../utils/ReOrder.helper.js';
 import { sendEmail } from '../middlewares/sendEmail.js';
-import { IssuanceLog } from '../model/Issuence.model.js';
 import Reorder from "../model/reorder.model.js"
 
 // Create a new order
@@ -175,24 +174,37 @@ const getReorder=asyncHandler(async(req,res)=>{
 
 // const change status 
 const reorderStatusChange=asyncHandler(async(req,res)=>{
-const {id}=req.params;
-const {status}=req.body;
-const reorder=await Reorder.findByIdAndUpdate(
-  id,
-  {status},
-  {new:true,runValidators:true}
-  
-)
-if (!reorder){
-  return res.status(404).json({
-    success:false,
-    message:"No order Found"
-  })
-}
-res.status(200).json({
-  success:true,
-  reorder
-})
+  const { id } = req.params;
+  const { status } = req.body;
+
+  // Find the reorder first
+  const reorder = await Reorder.findById(id);
+  if (!reorder) {
+    return res.status(404).json({
+      success: false,
+      message: "No reorder found",
+    });
+  }
+
+  // Update the status
+  reorder.status = status;
+  await reorder.save();
+
+  // If status changed to 'received', update item's stock
+  if (status.toLowerCase() === "received") {
+    const item = await Item.findById(reorder.itemId);
+    if (item) {
+      const addedStock = reorder.stock ?? item.reorderStock ?? 0;
+      item.stock += addedStock;
+      await item.save();
+    }
+  }
+  const updatedReorder = await Reorder.findById(reorder._id).populate("supplierId");
+
+  res.status(200).json({
+    success: true,
+    updatedReorder,
+  });
 });
 
 // Delete Reorder 

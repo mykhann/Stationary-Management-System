@@ -39,7 +39,7 @@ const Login = () => {
         dispatch(setUser(res.data.user));
         toast.success(res.data.message);
 
-        // ✅ Redirect admin to dashboard, others to home
+       
         if (res.data.user.role === "admin") {
           navigate("/dashboard");
         } else {

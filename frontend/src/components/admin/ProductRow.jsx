@@ -1,4 +1,4 @@
-// ProductRow.jsx
+// src/pages/ProductRow.jsx
 import React, { useState } from "react";
 import { Pencil, Trash2, Save } from "lucide-react";
 import axios from "axios";
@@ -20,7 +20,8 @@ const ProductRow = ({ product, onUpdate, refreshProducts }) => {
         editedData,
         { withCredentials: true }
       );
-      onUpdate(product._id, response.data.updatedItem || editedData); // fallback
+      const updated = response.data.updatedItem || editedData;
+      onUpdate?.(product._id, updated);
       setIsEditing(false);
     } catch (error) {
       console.error("Update failed", error);
@@ -29,8 +30,8 @@ const ProductRow = ({ product, onUpdate, refreshProducts }) => {
   };
 
   const handleDelete = async () => {
-    const confirm = window.confirm("Delete this product?");
-    if (!confirm) return;
+    const confirmDelete = window.confirm("Delete this product?");
+    if (!confirmDelete) return;
 
     try {
       await axios.delete(`${BASE_URL}/api/v1/item/delete/${product._id}`, {
@@ -100,6 +101,32 @@ const ProductRow = ({ product, onUpdate, refreshProducts }) => {
           />
         ) : (
           product.stock
+        )}
+      </td>
+      <td className="p-4">
+        {isEditing ? (
+          <input
+            name="reorderLevel"
+            type="number"
+            value={editedData.reorderLevel}
+            onChange={handleChange}
+            className="border p-1 rounded w-full"
+          />
+        ) : (
+          product.reorderLevel ?? "-"
+        )}
+      </td>
+      <td className="p-4">
+        {isEditing ? (
+          <input
+            name="reorderStock"
+            type="number"
+            value={editedData.reorderStock}
+            onChange={handleChange}
+            className="border p-1 rounded w-full"
+          />
+        ) : (
+          product.reorderStock ?? "-"
         )}
       </td>
       <td className="p-4 space-x-2">

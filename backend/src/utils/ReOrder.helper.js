@@ -3,23 +3,24 @@ import Reorder from "../model/reorder.model.js";
 import { sendEmail } from "../middlewares/sendEmail.js";
 
 export const reOrderHelper = async (itemId) => {
-  const item = await Item.findById(itemId).populate('supplier');
+  const item = await Item.findById(itemId).populate("supplier");
   if (!item) return;
 
- 
-  const reorderLevel = item.reorderLevel ?? 15; 
+  const reorderLevel = item.reorderLevel ?? 15;
+  const reorderStock = item.reorderStock ?? 50; // fallback if reorderStock is not set
+
   if (item.stock <= reorderLevel) {
     const existingReorder = await Reorder.findOne({
       itemId,
-      status: "pending"
+      status: "pending",
     });
 
     if (existingReorder) return;
 
     const reorder = await Reorder.create({
       itemId: item._id,
-      stock: 50,
-      supplierId: item.supplier?._id || null
+      stock: reorderStock,
+      supplierId: item.supplier?._id || null,
     });
 
     if (item.supplier?.email) {
@@ -41,10 +42,12 @@ export const reOrderHelper = async (itemId) => {
       await sendEmail({
         to: item.supplier.email,
         subject: `Reorder Request for "${item.productName}"`,
-        text: emailContent
+        text: emailContent,
       });
     }
   } else {
-    console.log(`Stock is sufficient for item: ${item.productName}, no reorder needed.`);
+    console.log(
+      `Stock is sufficient for item: ${item.productName}, no reorder needed.`
+    );
   }
 };

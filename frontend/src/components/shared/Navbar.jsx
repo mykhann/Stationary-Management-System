@@ -8,7 +8,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../reduxStore/authSlice";
-import { FaEye } from "react-icons/fa";
+
+import BASE_URL from "../../apiConfig";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,10 +22,19 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
 
-  const handleLogout = (e) => {
+  const handleLogout = async(e) => {
     e.preventDefault();
-    dispatch(setUser(null));
-    navigate("/login");
+    try {
+      const res=await axios.post(`${BASE_URL}/api/v1/user/logout`)
+      
+    } catch (error) {
+      console.log(error)
+      
+    }
+    finally{
+      dispatch(setUser(null));
+      navigate("/login")
+    }
   };
 
   const navigateToDashboard = () => {

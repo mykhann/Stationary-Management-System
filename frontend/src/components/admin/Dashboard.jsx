@@ -60,21 +60,34 @@ const Dashboard = () => {
             }))
         );
 
+        // Get current week's start and end
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const ordersThisWeek = ordersArr.filter((order) => {
+          const orderDate = new Date(order.createdAt);
+          return orderDate >= startOfWeek && orderDate <= endOfWeek;
+        });
+
+        const dailyRevenue = [0, 0, 0, 0, 0, 0, 0];
+        ordersThisWeek.forEach((order) => {
+          const day = new Date(order.createdAt).getDay(); // 0 = Sun
+          const index = day === 0 ? 6 : day - 1; // Convert to Mon=0 to Sun=6
+          dailyRevenue[index] += order.totalAmount || 0;
+        });
+
         setOrders(ordersArr);
         setItems(itemsArr);
         setDescriptiveInsights(flattenedDescriptive);
-        setOrderCount(ordersArr.length);
-        setCustomerCount(new Set(ordersArr.map((o) => o.user)).size);
+        setOrderCount(ordersThisWeek.length);
+        setCustomerCount(new Set(ordersThisWeek.map((o) => o.user)).size);
         setLowStockCount(itemsArr.filter((i) => i.stock < 10).length);
-
-        const dailyRevenue = [0, 0, 0, 0, 0, 0, 0];
-        ordersArr.forEach((order) => {
-          const rawDay = new Date(order.createdAt).getDay(); // 0 = Sun
-          const idx = rawDay === 0 ? 6 : rawDay - 1;
-          dailyRevenue[idx] += order.totalAmount || 0;
-        });
-
-        setWeeklyRevenue(dailyRevenue.reduce((sum, v) => sum + v, 0));
+        setWeeklyRevenue(dailyRevenue.reduce((sum, val) => sum + val, 0));
         setWeeklyChartData({
           labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
           datasets: [
@@ -89,7 +102,7 @@ const Dashboard = () => {
           ],
         });
       } catch (err) {
-        console.error("❌ Dashboard data fetch failed", err);
+        console.error("Dashboard data fetch failed", err);
       }
     };
 

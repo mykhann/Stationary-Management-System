@@ -15,6 +15,7 @@ const Signup = () => {
     avatar: null,
   });
 
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const onChangeEventHandler = (e) => {
@@ -27,6 +28,7 @@ const Signup = () => {
 
   const onSubmitEventHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("name", input.name);
@@ -38,7 +40,7 @@ const Signup = () => {
 
     try {
       const res = await axios.post(
-        `${Base_URL}/api/v1/user/register`,
+        `${Base_URL}/api/v1/users/register`,
         formData,
         {
           withCredentials: true,
@@ -54,12 +56,13 @@ const Signup = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || "Registration failed");
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
-      
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4 py-4">
         <div className="bg-white shadow-md rounded-lg max-w-md w-full px-5 py-6">
           <h2 className="text-xl font-bold text-center text-indigo-700 mb-4">Create an Account</h2>
@@ -163,9 +166,34 @@ const Signup = () => {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md text-sm"
+              disabled={loading}
+              className={`w-full py-2 text-white font-semibold rounded-md text-sm flex items-center justify-center ${
+                loading ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
             >
-              Sign Up
+              {loading && (
+                <svg
+                  className="animate-spin h-4 w-4 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103.515 13.05L4 12z"
+                  />
+                </svg>
+              )}
+              {loading ? "Signing Up..." : "Sign Up"}
             </button>
           </form>
 

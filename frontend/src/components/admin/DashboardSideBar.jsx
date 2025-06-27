@@ -3,14 +3,24 @@ import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../reduxStore/authSlice";
+import axios from "axios";
+import BASE_URL from "../../apiConfig.js";
 const DashboardSideBar = ({ closeSidebar }) => {
   const dispatch=useDispatch()
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
-  const handleLogout = (e) => {
+  const handleLogout = async(e) => {
       e.preventDefault();
+     try {
+      const res=await axios.post(`${BASE_URL}/api/v1/user/logout`,{},{withCredentials:true})
+      
+     } catch (error) {
+      console.log(error)
+     }
+     finally{
       dispatch(setUser(null));
-      navigate("/login");
+      navigate("/login")
+     }
     };
 
   const menuItems = [

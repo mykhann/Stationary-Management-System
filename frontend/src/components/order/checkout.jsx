@@ -124,10 +124,32 @@ const Checkout = () => {
       <button
         type="submit"
         disabled={!stripe || !elements || !clientSecret || loading}
-        className={`w-full py-3 rounded-md text-white font-semibold transition ${
+        className={`w-full py-3 rounded-md text-white font-semibold transition flex justify-center items-center ${
           loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
         }`}
       >
+        {loading && (
+          <svg
+            className="animate-spin h-5 w-5 mr-2 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103.515 13.05L4 12z"
+            ></path>
+          </svg>
+        )}
         {loading ? 'Processing…' : 'Pay & Place Order'}
       </button>
     </form>

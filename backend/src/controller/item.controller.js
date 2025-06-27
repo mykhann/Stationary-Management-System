@@ -81,6 +81,8 @@ const updateItem = asyncHandler(async (req, res) => {
   if (source.category) item.category = source.category;
   if (source.supplier) item.supplier = source.supplier;
   if (source.price) item.price = source.price;
+  if (source.reorderLevel) item.reorderLevel=source.reorderLevel;
+  if (source.reorderStock) item.reorderStock=source.reorderStock
 
   // Handle image upload
   if (req.file) {

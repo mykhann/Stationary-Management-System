@@ -43,6 +43,10 @@ const ItemSchema = new Schema({
     type: Number,
     default: 15
   },
+  reorderStock:{
+    type:Number,
+    default:30
+  },
   createdAt: {
     type: Date,
     default: Date.now
