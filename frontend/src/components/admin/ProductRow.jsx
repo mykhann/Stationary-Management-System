@@ -4,14 +4,36 @@ import { Pencil, Trash2, Save } from "lucide-react";
 import axios from "axios";
 import BASE_URL from "../../apiConfig";
 
-const ProductRow = ({ product, onUpdate, refreshProducts }) => {
+const ProductRow = ({ product, onUpdate, refreshProducts ,analytics }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ ...product });
+  
+  // analytics 
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditedData((prev) => ({ ...prev, [name]: value }));
   };
+  
+//  get trend status 
+const getTrendStatus = (category) => {
+  const catKey = category?.toLowerCase();
+  const trendData = analytics[catKey];
+
+  if (!trendData || trendData.length < 2) return "Stable";
+
+  const latest = trendData[trendData.length - 1];
+  const pctChange = latest.pctChange;
+
+  if (pctChange > 20) return "Increasing";
+  if (pctChange < -20) return "Decreasing";
+  return "Stable";
+};
+
+const trend = getTrendStatus(product.category);
+
+
 
   const handleSave = async () => {
     try {
@@ -116,6 +138,32 @@ const ProductRow = ({ product, onUpdate, refreshProducts }) => {
           product.reorderLevel ?? "-"
         )}
       </td>
+      <td className="p-4">
+  {isEditing ? (
+    <input
+      name="category"
+      value={editedData.category}
+      onChange={handleChange}
+      className="border p-1 rounded w-full"
+    />
+  ) : (
+    <span>
+     
+      <span
+        className={`text-xs px-2 py-1 rounded-full ml-2 ${
+          trend === "Stable"
+            ? "bg-green-100 text-green-800"
+            : trend.includes("Increasing")
+            ? "bg-blue-100 text-blue-800"
+            : "bg-red-100 text-red-800"
+        }`}
+      >
+        {trend}
+      </span>
+    </span>
+  )}
+</td>
+
       <td className="p-4">
         {isEditing ? (
           <input

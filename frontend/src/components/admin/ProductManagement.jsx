@@ -1,13 +1,6 @@
 // src/pages/ProductManagement.jsx
 import React, { useState, useEffect } from "react";
-import {
-  PlusCircle,
-  Menu,
-  Pencil,
-  Trash2,
-  Save,
-  XCircle,
-} from "lucide-react";
+import { PlusCircle, Menu, Pencil, Trash2, Save, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DashboardSideBar from "./DashboardSideBar";
@@ -27,6 +20,22 @@ const ProductManagement = () => {
   const [editData, setEditData] = useState({});
 
   const productsPerPage = 4;
+  const [analytics, setAnalytics] = useState({});
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/v1/analytics/descriptive`, {
+        withCredentials: true,
+      });
+      setAnalytics(res.data);
+    } catch (error) {
+      console.error("Failed to fetch analytics", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -154,7 +163,10 @@ const ProductManagement = () => {
       <main className="flex-1 p-6">
         {/* Mobile header */}
         <div className="flex items-center justify-between mb-6 md:hidden">
-          <button onClick={() => setSidebarOpen(true)} className="text-gray-900">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-900"
+          >
             <Menu size={24} />
           </button>
           <h2 className="text-xl font-semibold">Product Management</h2>
@@ -380,11 +392,21 @@ const ProductManagement = () => {
                   <tr>
                     <th className="p-4 text-left">Image</th>
                     <th className="p-4 text-left">Product</th>
-                    <th className="p-4 text-left hidden sm:table-cell">Category</th>
-                    <th className="p-4 text-left hidden sm:table-cell">Price</th>
-                    <th className="p-4 text-left hidden md:table-cell">Stock</th>
-                    <th className="p-4 text-left hidden lg:table-cell">reorderLevel</th>
-                    <th className="p-4 text-left hidden lg:table-cell">reorderStock</th>
+                    <th className="p-4 text-left hidden sm:table-cell">
+                      Category
+                    </th>
+                    <th className="p-4 text-left hidden sm:table-cell">
+                      Price
+                    </th>
+                    <th className="p-4 text-left hidden md:table-cell">
+                      Stock
+                    </th>
+                    <th className="p-4 text-left hidden lg:table-cell">
+                      reorderLevel
+                    </th>
+                    <th className="p-4 text-left hidden lg:table-cell">
+                      reorderStock
+                    </th>
                     <th className="p-4 text-left">Actions</th>
                   </tr>
                 </thead>
@@ -395,6 +417,7 @@ const ProductManagement = () => {
                       product={p}
                       onUpdate={handleUpdate}
                       refreshProducts={handleDelete}
+                      analytics={analytics}
                     />
                   ))}
                 </tbody>
