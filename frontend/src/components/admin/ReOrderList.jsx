@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Menu, Trash2, MoreVertical } from "lucide-react";
+import { Menu, MoreVertical } from "lucide-react";
 import BASE_URL from "../../apiConfig";
 import DashboardSideBar from "./DashboardSideBar";
 
@@ -9,27 +9,29 @@ const ReorderList = () => {
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const dropdownRef = useRef(null);
 
   useEffect(() => {
     fetchReorders();
 
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (!openDropdownId) return;
+      const menuEl = document.getElementById(`dropdown-${openDropdownId}`);
+      if (menuEl && !menuEl.contains(e.target)) {
         setOpenDropdownId(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [openDropdownId]);
 
   const fetchReorders = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/v1/order/reorder`, {
+      const { data } = await axios.get(`${BASE_URL}/api/v1/order/reorder`, {
         withCredentials: true,
       });
-      if (Array.isArray(response.data.reorder)) {
-        setReorders(response.data.reorder);
+      if (Array.isArray(data.reorder)) {
+        setReorders(data.reorder);
       } else {
         setError("Invalid response format");
       }
@@ -53,21 +55,27 @@ const ReorderList = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const response = await axios.patch(
+      const { data } = await axios.patch(
         `${BASE_URL}/api/v1/order/${id}/reorder/update`,
         { status: newStatus },
         { withCredentials: true }
       );
-      setReorders((prev) =>
-        prev.map((r) => (r._id === id ? response.data.reorder : r))
-      );
+      const updated = data.reorder;
+      if (updated && updated._id) {
+        setReorders((prev) =>
+          prev.map((r) => (r._id === updated._id ? updated : r))
+        );
+      } else {
+        await fetchReorders();
+      }
     } catch (err) {
-      console.error("Update failed:", err);
+      console.error("Update failed:", err.response?.data || err.message);
       alert("Failed to update status.");
+      await fetchReorders();
     }
   };
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const toggleSidebar = () => setSidebarOpen((o) => !o);
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
@@ -102,7 +110,7 @@ const ReorderList = () => {
 
         <div className="p-6 max-w-7xl mx-auto">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-            Reorder Management
+           Automated Reorders from vendors
           </h2>
 
           {error && <p className="text-red-600 mb-4">{error}</p>}
@@ -117,6 +125,7 @@ const ReorderList = () => {
                   className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex justify-between items-center hover:shadow-md transition"
                 >
                   <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Reorder ID */}
                     <div>
                       <p className="text-sm text-gray-500">Reorder ID</p>
                       <p className="font-medium text-gray-700">{reorder._id}</p>
@@ -125,6 +134,7 @@ const ReorderList = () => {
                       </p>
                     </div>
 
+                    {/* Supplier */}
                     <div>
                       <p className="text-sm text-gray-500">Supplier</p>
                       <p className="text-gray-700 text-sm">
@@ -136,23 +146,40 @@ const ReorderList = () => {
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-sm text-gray-500">Item & Status</p>
-                      <p className="text-gray-700 text-sm">
-                        Item ID: {reorder.itemId} • Stock: {reorder.stock}
-                      </p>
-                      <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-700">
-                        {reorder.status}
-                      </span>
+                    {/* Item & Status: now with name & image */}
+                    <div className="flex items-center space-x-4">
+                      {reorder.itemId?.avatar?.[0] && (
+                        <img
+                          src={reorder.itemId.avatar[0]}
+                          alt={reorder.itemId.productName}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-500">Item</p>
+                        <p className="font-medium text-gray-700">
+                          {reorder.itemId?.productName || "Unknown Item"}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Stock to add: {reorder.stock}
+                        </p>
+                        <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                          {reorder.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="ml-4 relative" ref={dropdownRef}>
+                  {/* Dropdown */}
+                  <div
+                    className="ml-4 relative"
+                    id={`dropdown-${reorder._id}`}
+                  >
                     <button
                       title="More"
                       onClick={() =>
-                        setOpenDropdownId(
-                          openDropdownId === reorder._id ? null : reorder._id
+                        setOpenDropdownId((open) =>
+                          open === reorder._id ? null : reorder._id
                         )
                       }
                       className="text-gray-600 hover:text-gray-800"
@@ -165,8 +192,8 @@ const ReorderList = () => {
                         {["ordered", "received", "cancelled"].map((status) => (
                           <button
                             key={status}
-                            onClick={() => {
-                              handleStatusUpdate(reorder._id, status);
+                            onClick={async () => {
+                              await handleStatusUpdate(reorder._id, status);
                               setOpenDropdownId(null);
                             }}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

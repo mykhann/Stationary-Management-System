@@ -18,35 +18,10 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create a new order (user must be logged in)
-router.post('/create', createOrder);
-
-// REORDER DETAILS 
-router.get('/reorder', isAuthenticated, getReorder);
-
-// Get all orders (admin only)
-router.get('/get', isAuthenticated, getAllOrders);
-
-// Get orders for logged-in user
-router.get('/my-orders', isAuthenticated, getUserOrders);
-
-// Get a specific order by ID (user must be logged in)
-router.get('/:id', isAuthenticated, getOrderById);
-
-// Update order status (admin only)
-router.put('/:id/status', isAuthenticated, updateOrderStatus);
-
-// Delete Order (admin only) 
-
-router.delete("/:id/delete",deleteOrder)
-
-// ReOrder Status Change 
-router.patch("/:id/reorder/update",reorderStatusChange)
-
-// ReOrder Deleted 
-router.delete("/:id/reorder/delete",DeleteReorder)
+router.post('/create', isAuthenticated, createOrder);
 
 // Stripe: create PaymentIntent for checkout
-router.post('/create-payment-intent',async (req, res) => {
+router.post('/create-payment-intent', isAuthenticated, async (req, res) => {
   try {
     const { cartItems } = req.body;
 
@@ -90,6 +65,28 @@ router.post('/create-payment-intent',async (req, res) => {
   }
 });
 
+// Get reorder details (user must be logged in)
+router.get('/reorder', isAuthenticated, getReorder);
 
+// Reorder status update
+router.patch('/:id/reorder/update', isAuthenticated, reorderStatusChange);
+
+// Delete reorder
+router.delete('/:id/reorder/delete', isAuthenticated, DeleteReorder);
+
+// Get all orders (admin only)
+router.get('/get', isAuthenticated, getAllOrders);
+
+// Get orders for the logged-in user
+router.get('/my-orders', isAuthenticated, getUserOrders);
+
+// Update order status (admin only)
+router.put('/:id/status', isAuthenticated, updateOrderStatus);
+
+// Delete an order (admin only)
+router.delete('/:id/delete', isAuthenticated, deleteOrder);
+
+// 🚨 This must be last to avoid route conflict with "/reorder"
+router.get('/:id', isAuthenticated, getOrderById);
 
 export default router;

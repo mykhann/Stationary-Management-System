@@ -159,7 +159,10 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
 // REORDER DETAILS 
 const getReorder=asyncHandler(async(req,res)=>{
-  const reorder=await Reorder.find().populate("supplierId").sort({createdAt:-1})
+  const reorder=await Reorder.find().
+  populate("supplierId").
+  populate("itemId")
+  .sort({createdAt:-1})
   if (!reorder){
     return res.status(404).json({
       success:false,

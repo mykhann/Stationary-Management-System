@@ -40,7 +40,7 @@ const Signup = () => {
 
     try {
       const res = await axios.post(
-        `${Base_URL}/api/v1/users/register`,
+        `${Base_URL}/api/v1/user/register`,
         formData,
         {
           withCredentials: true,
