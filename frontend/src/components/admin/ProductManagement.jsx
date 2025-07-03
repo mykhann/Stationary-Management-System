@@ -416,8 +416,9 @@ const ProductManagement = () => {
                       key={p._id}
                       product={p}
                       onUpdate={handleUpdate}
-                      refreshProducts={handleDelete}
+  
                       analytics={analytics}
+                      fetchProducts={fetchProducts}
                     />
                   ))}
                 </tbody>

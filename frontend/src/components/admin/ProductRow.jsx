@@ -4,7 +4,7 @@ import { Pencil, Trash2, Save } from "lucide-react";
 import axios from "axios";
 import BASE_URL from "../../apiConfig";
 
-const ProductRow = ({ product, onUpdate, refreshProducts ,analytics }) => {
+const ProductRow = ({ product, onUpdate, fetchProducts ,analytics }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ ...product });
   
@@ -59,7 +59,8 @@ const trend = getTrendStatus(product.category);
       await axios.delete(`${BASE_URL}/api/v1/item/delete/${product._id}`, {
         withCredentials: true,
       });
-      refreshProducts(product._id);
+      fetchProducts()
+      
     } catch (error) {
       console.error("Delete failed", error);
       alert("Failed to delete product.");
