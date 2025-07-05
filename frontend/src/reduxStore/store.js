@@ -4,7 +4,15 @@ import productSlice from "./productSlice";
 import orderSlice from "./orderSlice";
 import cartSlice from "./cartSlice";
 import storage from "redux-persist/lib/storage";
-import { persistReducer } from "redux-persist";
+import {
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 import { combineReducers } from "@reduxjs/toolkit";
 
 const persistConfig = {
@@ -13,7 +21,6 @@ const persistConfig = {
   storage,
 };
 
-// Combine your reducers
 const reducer = combineReducers({
   auth: authSlice,
   product: productSlice,
@@ -21,12 +28,17 @@ const reducer = combineReducers({
   cart: cartSlice,
 });
 
-// Create the persisted reducer
 const persistedReducer = persistReducer(persistConfig, reducer);
 
-// Create the Redux store
+// ✅ Add middleware to ignore non-serializable redux-persist actions
 const store = configureStore({
   reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
 });
 
 export { store };

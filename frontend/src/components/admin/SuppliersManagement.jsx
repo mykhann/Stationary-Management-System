@@ -139,14 +139,16 @@ const SupplierManagement = () => {
 
         {/* Desktop form above table */}
         {adding && editingId === null && (
-          <div className="mb-4">
-            <SupplierForm
+          <table className="mb-4">
+            <tbody>
+              <SupplierForm
               formData={newSupplier}
               onChange={handleNewChange}
               onSave={saveNew}
               onCancel={() => setAdding(false)}
             />
-          </div>
+            </tbody>
+          </table>
         )}
 
         {loading ? (
@@ -242,7 +244,7 @@ const SupplierManagement = () => {
                   )}
 
                   {suppliers.map((s) =>
-                    editingId === s._1 ? (
+                    editingId === s._id ? (
                       <SupplierForm
                         key={s._id}
                         formData={editData}

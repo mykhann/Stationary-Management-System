@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 
@@ -19,9 +19,9 @@ const HeroSection = () => {
           <button onClick={()=>navigate("/products")} className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
             Shop Now
           </button>
-          <button className="px-6 py-3 border border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition">
-            Learn More
-          </button>
+          <Link to="/about"><button className="px-6 py-3 border border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition">
+            About Us
+          </button></Link>
         </div>
       </div>
 

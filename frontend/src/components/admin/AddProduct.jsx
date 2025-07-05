@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Menu } from "lucide-react";
+import { Menu, Package, Tag, Truck, IndianRupee, Layers, Image as ImageIcon, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -93,10 +93,7 @@ const AddProduct = () => {
           <div className="w-64 bg-gray-900 text-white">
             <DashBoardSideBar closeSidebar={closeSidebar} />
           </div>
-          <div
-            className="flex-1 bg-black bg-opacity-50"
-            onClick={closeSidebar}
-          />
+          <div className="flex-1 bg-black bg-opacity-50" onClick={closeSidebar} />
         </div>
       )}
 
@@ -111,47 +108,58 @@ const AddProduct = () => {
           <div className="w-6" />
         </div>
 
-        <main className="p-6">
-          <h2 className="text-2xl font-semibold mb-6 hidden md:block">
-            Add New Product
-          </h2>
+        <main className="px-4 py-2 md:px-6 md:py-4">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
+              Add Product
+            </h2>
+          </div>
 
           <form
             onSubmit={handleSubmit}
-            className="w-full bg-white p-6 rounded-xl shadow space-y-6 max-w-5xl mx-auto"
+            className="w-full bg-white p-4 md:p-6 rounded-lg shadow-sm space-y-4 max-w-4xl mx-auto"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Product Name */}
               <div>
-                <label className="text-gray-700">Product Name</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <Package size={16} /> Product Name
+                </label>
                 <input
                   type="text"
                   name="productName"
                   value={input.productName}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
 
+              {/* Category */}
               <div>
-                <label className="text-gray-700">Category</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <Tag size={16} /> Category
+                </label>
                 <input
                   type="text"
                   name="category"
                   value={input.category}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
 
+              {/* Supplier */}
               <div>
-                <label className="text-gray-700">Supplier</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <Truck size={16} /> Supplier
+                </label>
                 <select
                   name="supplier"
                   value={input.supplier}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 >
                   <option value="">Select Supplier</option>
@@ -163,66 +171,79 @@ const AddProduct = () => {
                 </select>
               </div>
 
+              {/* Price */}
               <div>
-                <label className="text-gray-700">Price (₹)</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <IndianRupee size={16} /> Price (₹)
+                </label>
                 <input
                   type="number"
                   name="price"
                   value={input.price}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
 
+              {/* Stock */}
               <div>
-                <label className="text-gray-700">Stock</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <Layers size={16} /> Stock
+                </label>
                 <input
                   type="number"
                   name="stock"
                   value={input.stock}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
 
+              {/* Description */}
               <div className="md:col-span-2">
-                <label className="text-gray-700">Description</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <FileText size={16} /> Description
+                </label>
                 <textarea
                   name="description"
                   rows="3"
                   value={input.description}
                   onChange={handleInputChange}
-                  className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   required
                 />
               </div>
 
+              {/* Image Upload */}
               <div className="md:col-span-2">
-                <label className="text-gray-700">Product Image</label>
+                <label className="text-gray-700 flex items-center gap-2">
+                  <ImageIcon size={16} /> Product Image
+                </label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
-                  className="w-full mt-1 px-3 py-2 border rounded bg-white"
+                  className="w-full mt-1 px-3 py-1.5 text-sm border rounded bg-white"
                   required
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-4 pt-4">
+            {/* Buttons */}
+            <div className="flex justify-end gap-4 pt-2">
               <button
                 type="button"
                 onClick={() => navigate("/dashboard")}
-                className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded transition"
+                className="px-4 py-1.5 text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 rounded transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded transition flex items-center"
+                className="px-4 py-1.5 text-sm bg-blue-700 hover:bg-blue-800 text-white rounded transition flex items-center"
               >
                 {isSubmitting && (
                   <svg

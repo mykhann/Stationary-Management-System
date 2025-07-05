@@ -1,4 +1,5 @@
 import React from "react";
+import { Check, X } from "lucide-react";
 
 const SupplierForm = ({
   supplier,
@@ -15,7 +16,7 @@ const SupplierForm = ({
           name="name"
           value={formData.name}
           onChange={onChange}
-          className="border rounded p-1 w-full"
+          className="border rounded p-2 w-full"
           placeholder="Name"
         />
       </td>
@@ -24,7 +25,7 @@ const SupplierForm = ({
           name="contactPerson"
           value={formData.contactPerson}
           onChange={onChange}
-          className="border rounded p-1 w-full"
+          className="border rounded p-2 w-full"
           placeholder="Contact Person"
         />
       </td>
@@ -33,7 +34,7 @@ const SupplierForm = ({
           name="email"
           value={formData.email}
           onChange={onChange}
-          className="border rounded p-1 w-full"
+          className="border rounded p-2 w-full"
           placeholder="Email"
         />
       </td>
@@ -42,7 +43,7 @@ const SupplierForm = ({
           name="phone"
           value={formData.phone}
           onChange={onChange}
-          className="border rounded p-1 w-full"
+          className="border rounded p-2 w-full"
           placeholder="Phone"
         />
       </td>
@@ -51,16 +52,22 @@ const SupplierForm = ({
           name="address"
           value={formData.address}
           onChange={onChange}
-          className="border rounded p-1 w-full"
+          className="border rounded p-2 w-full"
           placeholder="Address"
         />
       </td>
-      <td className="p-4 flex gap-2">
-        <button onClick={onSave} className="text-green-600 hover:underline">
-          Save
+      <td className="p-4 flex items-center gap-2">
+        <button
+          onClick={onSave}
+          className="flex items-center gap-1 text-green-600 hover:underline"
+        >
+          <Check size={16} /> Save
         </button>
-        <button onClick={onCancel} className="text-gray-500 hover:underline">
-          Cancel
+        <button
+          onClick={onCancel}
+          className="flex items-center gap-1 text-gray-500 hover:underline"
+        >
+          <X size={16} /> Cancel
         </button>
       </td>
     </tr>

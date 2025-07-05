@@ -38,7 +38,13 @@ const Dashboard = () => {
       },
     ],
   });
-
+ const weeklyChartOptions = {
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -194,9 +200,9 @@ const Dashboard = () => {
           <Card className="md:col-span-2">
             <CardContent>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold">Weekly Sales Analytics</h4>
+                <h4 className="text-lg font-semibold ">Weekly Sales Analytics</h4>
               </div>
-              <Line data={weeklyChartData} />
+                <Line data={weeklyChartData} options={weeklyChartOptions} />
             </CardContent>
           </Card>
 

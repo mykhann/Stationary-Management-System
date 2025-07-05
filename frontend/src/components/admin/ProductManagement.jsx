@@ -405,7 +405,10 @@ const ProductManagement = () => {
                       reorderLevel
                     </th>
                     <th className="p-4 text-left hidden lg:table-cell">
-                      reorderStock
+                      Trend
+                    </th>
+                    <th className="p-4 text-left hidden lg:table-cell">
+                      reorder Quantity
                     </th>
                     <th className="p-4 text-left">Actions</th>
                   </tr>

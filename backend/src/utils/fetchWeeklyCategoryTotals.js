@@ -50,9 +50,7 @@ export async function fetchWeeklyCategoryTotals(weeks = 8) {
     { $sort: { "_id.year": 1, "_id.week": 1 } }
   ]);
 
-  console.log("[fetchWeeklyCategoryTotals] Weeks included:", weeks);
-  console.log("[fetchWeeklyCategoryTotals] Aligned start date (ISO week start):", startDate.toISOString());
-  console.log("[fetchWeeklyCategoryTotals] Raw aggregation result sample:", raw.slice(-3));
+ 
 
   return raw.map(doc => {
     const { category, week, year } = doc._id;

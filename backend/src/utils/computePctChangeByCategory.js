@@ -40,7 +40,6 @@ export function computePctChangeByCategory(data) {
 
   for (const [cat, arr] of Object.entries(byCat)) {
     if (!Array.isArray(arr) || arr.length === 0) {
-      console.log(`[computePctChange] Skipping empty category: ${cat}`);
       continue;
     }
 
@@ -64,8 +63,7 @@ export function computePctChangeByCategory(data) {
       };
     });
 
-    console.log(`[computePctChange] Category: ${cat}`);
-    console.table(result[cat]);
+
   }
 
   return result;

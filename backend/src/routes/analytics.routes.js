@@ -16,7 +16,6 @@ router.get("/descriptive", async (req, res, next) => {
   try {
     const weeks = parseInt(req.query.weeks) || 8;
     const raw = await fetchWeeklyCategoryTotals(weeks);
-    console.log("[/descriptive] Raw weekly totals (last 3):", raw.slice(-3));
 
     const filled = fillMissingWeeks(raw); // Only fill ONCE
     const descriptive = computePctChangeByCategory(filled);
