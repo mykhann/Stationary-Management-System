@@ -1,19 +1,32 @@
-// src/utils/fetchWeeklyCategoryTotals.js
-
 import Order from "../model/order.model.js";
 
 export async function fetchWeeklyCategoryTotals(weeks = 8) {
-  // Align startDate to Monday of the (current week - weeks)
-  const startDate = new Date();
-  startDate.setUTCHours(0, 0, 0, 0);
-  startDate.setUTCDate(startDate.getUTCDate() - (weeks * 7));
+  // Align to Monday of current ISO week (using local time)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const dayOfWeek = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+  // Calculate days to subtract to get Monday
+  const diffToMonday = (dayOfWeek + 6) % 7;
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() - diffToMonday);
 
-  const day = startDate.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const diffToMonday = (day === 0 ? -6 : 1) - day;
-  startDate.setUTCDate(startDate.getUTCDate() + diffToMonday);
+  // Calculate start date (N weeks back) and end date (start of next week) to include current week
+  const startDate = new Date(thisMonday);
+  startDate.setDate(thisMonday.getDate() - weeks * 7);
+
+  const nextMonday = new Date(thisMonday);
+  nextMonday.setDate(thisMonday.getDate() + 7);
+  const endDate = nextMonday; // include current (maybe incomplete) week
 
   const raw = await Order.aggregate([
-    { $match: { createdAt: { $gte: startDate } } },
+    {
+      $match: {
+        createdAt: {
+          $gte: startDate,
+          $lt: endDate
+        }
+      }
+    },
     { $unwind: "$orderItems" },
     {
       $lookup: {
@@ -33,8 +46,8 @@ export async function fetchWeeklyCategoryTotals(weeks = 8) {
     },
     {
       $addFields: {
-        week: { $isoWeek: "$createdAt" },
-        year: { $isoWeekYear: "$createdAt" }
+        week: { $isoWeek: { date: "$createdAt", timezone: "Asia/Karachi" } },
+        year: { $isoWeekYear: { date: "$createdAt", timezone: "Asia/Karachi" } }
       }
     },
     {
@@ -49,8 +62,6 @@ export async function fetchWeeklyCategoryTotals(weeks = 8) {
     },
     { $sort: { "_id.year": 1, "_id.week": 1 } }
   ]);
-
- 
 
   return raw.map(doc => {
     const { category, week, year } = doc._id;

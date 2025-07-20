@@ -1,4 +1,4 @@
-import express from "express";
+
 import bcrypt from "bcrypt";
 import { User } from "../model/User.model.js";
 import jwt from "jsonwebtoken";
@@ -25,8 +25,6 @@ const RegisterUser = asyncHandler(async (req, res) => {
         });
     }
 
-   
-
     // Email validation (valid email format)
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!emailRegex.test(email)) {
@@ -36,11 +34,11 @@ const RegisterUser = asyncHandler(async (req, res) => {
         });
     }
 
-    // Password validation (min. 5 characters, no other restrictions)
+    // Password validation 
     if (password.length < 5) {
         return res.status(400).json({
             success: false,
-            message: "Password must be at least 8 characters long",
+            message: "Password must be at least 5 characters long",
         });
     }
 
@@ -64,10 +62,10 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     // Hash password
     const securePass = await bcrypt.hash(password, 10);
-    if (!req.file) {
-            return res.status(404).json({ success: false, message: "Please upload avatar" });
-        }
-        const avatarResult = await uploadOnCloudinary(req.file.buffer, req.file.originalName)
+    // if (!req.file) {
+    //         return res.status(404).json({ success: false, message: "Please upload avatar" });
+    //     }
+    //     const avatarResult = await uploadOnCloudinary(req.file.buffer, req.file.originalName)
 
     // Create user
     const user = await User.create({
@@ -75,7 +73,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
         email,
         password: securePass,
         phone,
-        avatar: avatarResult.secure_url,
+        // avatar: avatarResult.secure_url,
         address
     });
 

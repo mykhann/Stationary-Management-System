@@ -6,7 +6,6 @@ import connectDB  from "./src/database/db.js";
 import userRoutes from "./src/routes/user.route.js"
 import itemRoutes from "./src/routes/item.route.js"
 import SupplierRoutes from "./src/routes/supplier.route.js";
-import issuenceRoutes from "./src/routes/issuence.route.js"
 import orderRoutes from "./src/routes/order.route.js"
 import analyticsRoutes from "./src/routes/analytics.routes.js"
 import cors from "cors"
@@ -30,9 +29,6 @@ app.use("/api/v1/item",itemRoutes)
 
 // Supplier Routes 
 app.use("/api/v1/supplier",SupplierRoutes)
-
-// Issuence Routes 
-app.use("/api/v1/issuence",issuenceRoutes)
 
 // order Routes 
 app.use("/api/v1/order",orderRoutes)

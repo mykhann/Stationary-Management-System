@@ -68,7 +68,7 @@ const Signup = () => {
           <h2 className="text-xl font-bold text-center text-indigo-700 mb-4">Create an Account</h2>
           <form onSubmit={onSubmitEventHandler} className="space-y-3">
             {/* Avatar Upload */}
-            <div>
+            {/* <div>
               <label htmlFor="avatar" className="block text-sm font-medium text-gray-700 mb-1">
                 Profile Picture
               </label>
@@ -80,7 +80,7 @@ const Signup = () => {
                 onChange={onFileChangeHandler}
                 className="block w-full text-sm text-gray-600 file:border file:rounded file:px-2 file:py-1 file:bg-indigo-50 file:text-indigo-700"
               />
-            </div>
+            </div> */}
 
             {/* Name */}
             <div>

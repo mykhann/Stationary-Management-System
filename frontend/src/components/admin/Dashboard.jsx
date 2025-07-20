@@ -8,7 +8,9 @@ import axios from "axios";
 import BASE_URL from "../../apiConfig";
 
 const Card = ({ children, className = "" }) => (
-  <div className={`bg-white shadow-md rounded-2xl ${className}`}>{children}</div>
+  <div className={`bg-white shadow-md rounded-2xl ${className}`}>
+    {children}
+  </div>
 );
 
 const CardContent = ({ children, className = "" }) => (
@@ -38,7 +40,7 @@ const Dashboard = () => {
       },
     ],
   });
- const weeklyChartOptions = {
+  const weeklyChartOptions = {
     plugins: {
       legend: {
         display: false,
@@ -51,24 +53,36 @@ const Dashboard = () => {
         const [ordersResp, itemsResp, descriptiveResp] = await Promise.all([
           axios.get(`${BASE_URL}/api/v1/order/get`, { withCredentials: true }),
           axios.get(`${BASE_URL}/api/v1/item/get`, { withCredentials: true }),
-          axios.get(`${BASE_URL}/api/v1/analytics/descriptive`, { withCredentials: true }),
+          axios.get(`${BASE_URL}/api/v1/analytics/descriptive`, {
+            withCredentials: true,
+          }),
         ]);
 
-        const ordersArr = Array.isArray(ordersResp.data.orders) ? ordersResp.data.orders : [];
-        const itemsArr = Array.isArray(itemsResp.data.items) ? itemsResp.data.items : [];
+        const ordersArr = Array.isArray(ordersResp.data.orders)
+          ? ordersResp.data.orders
+          : [];
+        const itemsArr = Array.isArray(itemsResp.data.items)
+          ? itemsResp.data.items
+          : [];
         const descriptiveRaw = descriptiveResp.data;
 
-        const flattenedDescriptive = Object.entries(descriptiveRaw || {}).flatMap(
-          ([category, arr]) =>
-            arr.map(entry => ({
-              ...entry,
-              category,
-            }))
+        const flattenedDescriptive = Object.entries(
+          descriptiveRaw || {}
+        ).flatMap(([category, arr]) =>
+          arr.map((entry) => ({
+            ...entry,
+            category,
+          }))
         );
 
-        // Get current week's start and end
-        const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+        // Align to Monday local time (Mon=0 … Sun=6)
+        const today = new Date();
+        const day = today.getDay(); // Sun=0, Mon=1, … Sat=6
+        // if Sunday (0) you want to go back 6 days, otherwise go back day-1
+        const diffToMonday = day === 0 ? 6 : day - 1;
+
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - diffToMonday);
         startOfWeek.setHours(0, 0, 0, 0);
 
         const endOfWeek = new Date(startOfWeek);
@@ -135,7 +149,10 @@ const Dashboard = () => {
       <main className="flex-1 p-6 w-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <button className="md:hidden p-2 text-gray-700" onClick={() => setSidebarOpen(true)}>
+            <button
+              className="md:hidden p-2 text-gray-700"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu size={24} />
             </button>
             <h2 className="text-2xl font-semibold">Admin Panel</h2>
@@ -200,15 +217,19 @@ const Dashboard = () => {
           <Card className="md:col-span-2">
             <CardContent>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold ">Weekly Sales Analytics</h4>
+                <h4 className="text-lg font-semibold ">
+                  Weekly Sales Analytics
+                </h4>
               </div>
-                <Line data={weeklyChartData} options={weeklyChartOptions} />
+              <Line data={weeklyChartData} options={weeklyChartOptions} />
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-b from-blue-600 to-purple-600 text-white">
             <CardContent>
-              <h4 className="text-lg font-semibold mb-4">Descriptive Analytics</h4>
+              <h4 className="text-lg font-semibold mb-4">
+                Descriptive Analytics
+              </h4>
               {descriptiveInsights.length === 0 ? (
                 <p>Loading insights…</p>
               ) : (
@@ -225,7 +246,9 @@ const Dashboard = () => {
                 ).map((entry, index) => (
                   <div key={index} className="mb-2">
                     <div className="flex justify-between text-sm items-center">
-                      <span className="font-medium capitalize">{entry.category}</span>
+                      <span className="font-medium capitalize">
+                        {entry.category}
+                      </span>
                       <div className="flex items-center gap-1">
                         {entry.pctChange === null ? (
                           <span>–</span>
@@ -233,17 +256,23 @@ const Dashboard = () => {
                           <>
                             <span
                               className={
-                                entry.pctChange >= 0 ? "text-green-300" : "text-red-300"
+                                entry.pctChange >= 0
+                                  ? "text-green-300"
+                                  : "text-red-300"
                               }
                             >
                               {entry.pctChange > 0 ? "↑" : "↓"}
                             </span>
                             <span
                               className={
-                                entry.pctChange >= 0 ? "text-green-300" : "text-red-300"
+                                entry.pctChange >= 0
+                                  ? "text-green-300"
+                                  : "text-red-300"
                               }
                             >
-                              {`${entry.pctChange > 0 ? "+" : ""}${entry.pctChange.toFixed(1)}%`}
+                              {`${
+                                entry.pctChange > 0 ? "+" : ""
+                              }${entry.pctChange.toFixed(1)}%`}
                             </span>
                           </>
                         )}

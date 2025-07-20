@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import Navbar from "../shared/Navbar";
 import { useState } from "react";
 import axios from "axios";
 import { setUser } from "../../reduxStore/authSlice";

@@ -29,8 +29,8 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistStore } from 'redux-persist';
 
 // Stripe Elements
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+// import { Elements } from '@stripe/react-stripe-js';
+// import { loadStripe } from '@stripe/stripe-js';
 import PredictveAnalytics from '@components/admin/PredictiveAnalytics';
 import DescriptiveAnalysis from '@components/admin/Descriptive';
 import LatestArrivals from '@components/products/LatestArrivals';
@@ -38,7 +38,7 @@ import LatestArrivals from '@components/products/LatestArrivals';
 let persistor = persistStore(store);
 
 // Use Vite env for publishable key
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const router = createBrowserRouter([
   { path: '/', element: <Layout><Home /></Layout> },
@@ -50,15 +50,19 @@ const router = createBrowserRouter([
   { path: '/products/:id', element: <Layout><ProductDetails /></Layout> },
   { path: '/profile', element: <Layout><ProfileDetails /></Layout> },
   { path: '/latest', element: <Layout><LatestArrivals /></Layout> },
+  { path: '/checkout', element: <Layout><Checkout /></Layout> },
   { path: '/cart', element: <Cart /> },
-  {
-    path: '/checkout',
-    element: (
-      <Elements stripe={stripePromise}>
-        <Layout><Checkout /></Layout>
-      </Elements>
-    ),
-  },
+
+  // {
+  //   path: '/checkout',
+  //   element: (
+  //     <Elements
+  //     //  stripe={stripePromise}
+  //      >
+  //       <Layout><Checkout /></Layout>
+  //     </Elements>
+  //   ),
+  // },
   { path: '/history', element: <Layout><OrderHistory /></Layout> },
 
   // Admin routes

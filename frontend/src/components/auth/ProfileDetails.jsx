@@ -22,11 +22,11 @@ const ProfileDetails = () => {
           </button>
 
           <div className="flex flex-col sm:flex-row items-center p-8 gap-8">
-            <img
+            {/* <img
               src={user.avatar || "/default-avatar.png"}
               alt="Profile Avatar"
               className="w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-indigo-300 shadow-md"
-            />
+            /> */}
             {isEditing ? (
               <ProfileEditForm user={user} setIsEditing={setIsEditing} />
             ) : (

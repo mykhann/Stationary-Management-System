@@ -3,21 +3,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useStripe, useElements } from '@stripe/react-stripe-js';
 import BASE_URL from '../../apiConfig';
 import { clearCart } from '../../reduxStore/cartSlice';
 import ShippingForm from './ShippingForm';
-import PaymentForm from './PaymentForm';
 
 const Checkout = () => {
-  const stripe = useStripe();
-  const elements = useElements();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const { cartItems } = useSelector((s) => s.cart);
 
-  const [clientSecret, setClientSecret] = useState('');
   const [shipping, setShipping] = useState({
     fullName: '',
     address: '',
@@ -26,7 +21,6 @@ const Checkout = () => {
     country: '',
   });
   const [loading, setLoading] = useState(false);
-  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -40,119 +34,105 @@ const Checkout = () => {
     }
   }, [user]);
 
-  useEffect(() => {
+  const handlePlaceOrder = async () => {
     if (!cartItems || cartItems.length === 0) return;
-    async function createPaymentIntent() {
-      try {
-        const res = await axios.post(`${BASE_URL}/api/v1/order/create-payment-intent`, { cartItems }, { withCredentials: true });
-        if (res.data.success) setClientSecret(res.data.clientSecret);
-        else throw new Error(res.data.message || 'No client secret');
-      } catch (err) {
-        toast.error('Failed to initialize payment');
-      } finally {
-        setInitializing(false);
-      }
-    }
-    createPaymentIntent();
-  }, [cartItems]);
-
-  const handlePayment = async () => {
-    if (!stripe || !elements || !clientSecret) return;
 
     setLoading(true);
     try {
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement('cardNumber'),
-          billing_details: { name: shipping.fullName },
-        },
-      });
+      const orderData = {
+        orderItems: cartItems.map(i => ({
+          item: i._id,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        shippingAddress: shipping,
+        paymentMethod: 'Cash on Delivery',
+      };
 
-      if (error) return toast.error(error.message);
+      const res = await axios.post(`${BASE_URL}/api/v1/order/create`, orderData, { withCredentials: true });
 
-      if (paymentIntent.status === 'succeeded') {
-        const orderData = {
-          orderItems: cartItems.map(i => ({
-             item: i._id, quantity: i.quantity ,
-             price: i.price,
-            })),
-          shippingAddress: shipping,
-          paymentMethod: 'Stripe',
-          paymentResult: {
-            id: paymentIntent.id,
-            status: paymentIntent.status,
-            amount: paymentIntent.amount,
-          },
-        };
-
-        const res = await axios.post(`${BASE_URL}/api/v1/order/create`, orderData, { withCredentials: true });
-        if (res.data.success) {
-          toast.success('Order placed!');
-          dispatch(clearCart());
-          navigate('/');
-        } else {
-          throw new Error(res.data.message);
-        }
+      if (res.data.success) {
+        toast.success('Order placed!');
+        dispatch(clearCart());
+        navigate('/');
+      } else {
+        throw new Error(res.data.message);
       }
     } catch (err) {
-      toast.error(err.message || 'Payment failed.');
+      toast.error(err.message || 'Order placement failed.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (initializing) return <p className="text-center mt-6">Initializing payment...</p>;
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handlePayment();
-      }}
-      className="max-w-xl mx-auto w-full p-8 bg-white shadow-md rounded-xl border border-gray-200"
-    >
-      <h2 className="text-3xl font-bold text-center mb-6">Secure Checkout</h2>
-      <div className="flex justify-center gap-3 mb-6">
-        <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" className="h-8" />
-        <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="MasterCard" className="h-8" />
-        <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" className="h-8" />
+    <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Order Summary */}
+      <div className="bg-white p-6 rounded-xl shadow border border-gray-200 h-fit">
+        <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
+        {cartItems.map((item) => (
+          <div key={item._id} className="flex justify-between items-center py-2 border-b">
+            <div>
+              <p className="font-medium">{item.name}</p>
+              <p className="text-sm text-gray-500"> {item.productName}</p>
+              <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+            </div>
+            <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+          </div>
+        ))}
+        <div className="flex justify-between items-center pt-4 text-lg font-bold">
+          <span>Total:</span>
+          <span>${totalAmount.toFixed(2)}</span>
+        </div>
       </div>
 
-      <ShippingForm shipping={shipping} setShipping={setShipping} />
-      <PaymentForm />
-
-      <button
-        type="submit"
-        disabled={!stripe || !elements || !clientSecret || loading}
-        className={`w-full py-3 rounded-md text-white font-semibold transition flex justify-center items-center ${
-          loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
-        }`}
+      {/* Checkout Form */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handlePlaceOrder();
+        }}
+        className="bg-white p-8 rounded-xl shadow border border-gray-200"
       >
-        {loading && (
-          <svg
-            className="animate-spin h-5 w-5 mr-2 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103.515 13.05L4 12z"
-            ></path>
-          </svg>
-        )}
-        {loading ? 'Processing…' : 'Pay & Place Order'}
-      </button>
-    </form>
+        <h2 className="text-3xl font-bold text-center mb-6">Cash On Delivery </h2>
+       
+        <ShippingForm shipping={shipping} setShipping={setShipping} />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full py-3 rounded-md text-white font-semibold transition flex justify-center items-center ${
+            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+          }`}
+        >
+          {loading && (
+            <svg
+              className="animate-spin h-5 w-5 mr-2 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4l3.536-3.536A9 9 0 103.515 13.05L4 12z"
+              ></path>
+            </svg>
+          )}
+          {loading ? 'Placing Order…' : 'Place Order'}
+        </button>
+      </form>
+    </div>
   );
 };
 
