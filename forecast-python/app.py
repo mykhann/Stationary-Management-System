@@ -6,24 +6,19 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import numpy as np
+import os
 
 app = Flask(__name__)
-
 data_store = {}
 
-# MongoDB configuration
-MONGO_URI = "mongodb+srv://37181:PguuWu7oSsTqjUK7@chaibackend.cnq4lhz.mongodb.net"
+MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = "Stationary-Management"
 
-# Forecast parameters
 HISTORY_WEEKS = 8
 FUTURE_WEEKS = 1
 INTERVAL_WIDTH = 0.95
-# Fallback bounds factor
-FALLBACK_FACTOR = 0.2  # 20%
+FALLBACK_FACTOR = 0.2
 
-# Scheduler setup
-scheduler = BackgroundScheduler()
 logging.getLogger("apscheduler").setLevel(logging.ERROR)
 
 @app.route("/forecast", methods=["GET"])
@@ -36,6 +31,7 @@ def run_forecast():
     db = client[DB_NAME]
 
     start_date = datetime.now() - timedelta(weeks=HISTORY_WEEKS)
+
     pipeline = [
         {"$match": {"createdAt": {"$gte": start_date}}},
         {"$unwind": "$orderItems"},
@@ -46,59 +42,84 @@ def run_forecast():
             "as": "itemDetails"
         }},
         {"$unwind": "$itemDetails"},
-        {"$project": {"category": "$itemDetails.category", "quantity": "$orderItems.quantity", "createdAt": 1}},
-        {"$addFields": {"week": {"$isoWeek": "$createdAt"}, "year": {"$isoWeekYear": "$createdAt"}}},
+        {"$project": {
+            "category": "$itemDetails.category",
+            "quantity": "$orderItems.quantity",
+            "createdAt": 1
+        }},
+        {"$addFields": {
+            "week": {"$isoWeek": "$createdAt"},
+            "year": {"$isoWeekYear": "$createdAt"}
+        }},
         {"$group": {
-            "_id": {"category": "$category", "week": "$week", "year": "$year"},
+            "_id": {
+                "category": "$category",
+                "week": "$week",
+                "year": "$year"
+            },
             "total": {"$sum": "$quantity"},
             "ds": {"$min": "$createdAt"}
         }},
         {"$sort": {"_id.year": 1, "_id.week": 1}}
     ]
+
     results = list(db.orders.aggregate(pipeline))
 
-    records = [{"category": r["_id"]["category"], "ds": r["ds"], "y": r["total"]} for r in results]
+    records = [
+        {"category": r["_id"]["category"], "ds": r["ds"], "y": r["total"]}
+        for r in results
+    ]
+
     df = pd.DataFrame(records)
     if df.empty:
         data_store = {"message": "No forecast data available"}
         return
 
     forecasts = {}
+
     for cat, grp in df.groupby("category"):
-        df_cat = grp.sort_values("ds")[['ds','y']]
+        df_cat = grp.sort_values("ds")[["ds", "y"]]
         if len(df_cat) < 2:
             continue
 
-        model = Prophet(interval_width=INTERVAL_WIDTH,
-                        weekly_seasonality=False,
-                        yearly_seasonality=False,
-                        daily_seasonality=False)
+        model = Prophet(
+            interval_width=INTERVAL_WIDTH,
+            weekly_seasonality=False,
+            yearly_seasonality=False,
+            daily_seasonality=False
+        )
+
         model.fit(df_cat)
 
-        future = model.make_future_dataframe(periods=FUTURE_WEEKS, freq='W')
+        future = model.make_future_dataframe(
+            periods=FUTURE_WEEKS, freq="W"
+        )
         forecast_df = model.predict(future)
         row = forecast_df.iloc[-1]
-        yhat = float(row['yhat'])
-        lower = float(row['yhat_lower'])
-        upper = float(row['yhat_upper'])
 
-        # Fallback if lower == upper or invalid
+        yhat = float(row["yhat"])
+        lower = float(row["yhat_lower"])
+        upper = float(row["yhat_upper"])
+
         if np.isclose(lower, upper):
             lower = yhat * (1 - FALLBACK_FACTOR)
             upper = yhat * (1 + FALLBACK_FACTOR)
 
         forecasts[cat] = [{
-            'week': future['ds'].iloc[-1].strftime('%Y-%m-%d'),
-            'forecast': round(yhat, 1),
-            'lower': round(max(0, lower), 1),
-            'upper': round(max(0, upper), 1)
+            "week": future["ds"].iloc[-1].strftime("%Y-%m-%d"),
+            "forecast": round(yhat, 1),
+            "lower": round(max(0, lower), 1),
+            "upper": round(max(0, upper), 1)
         }]
 
     data_store = forecasts
-    print(f"[Forecast] updated at {datetime.now().isoformat()}")
+    print(f"[Forecast updated] {datetime.now().isoformat()}")
 
-if __name__ == '__main__':
-    scheduler.add_job(run_forecast, 'cron', day_of_week='sun', hour=0, minute=0)
+# scheduler only if enabled
+if os.environ.get("RUN_SCHEDULER") == "true":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(run_forecast, "cron", day_of_week="sun", hour=0)
     scheduler.start()
-    run_forecast()
-    app.run(port=5001, debug=True)
+
+# always run once
+run_forecast()
