@@ -46,10 +46,9 @@ connectDB();
 
 // production 
 app.use(express.static(path.join(_dirname,"/frontend/dist")))
-app.get("*",(_,res)=>{
-    res.sendFile(path.join(_dirname, "frontend","dist","index.html"))
-
-})
+app.use((req, res) => {
+  res.sendFile(path.join(_dirname, "frontend", "dist", "index.html"));
+});
 
 app.listen(process.env.PORT,(req,res)=>{
     console.log(`connection established on port ${process.env.PORT}`)
