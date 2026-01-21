@@ -1,8 +1,0 @@
-Flask
-pymongo
-pandas
-prophet
-apscheduler
-numpy
-gunicorn==21.2.0
-
