@@ -5,9 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"nodemon index.js\" \"npm run start:python\"",
-    "start:python": "cd ../forecast-python && venv\\Scripts\\python forecast_api.py"
+   "start": "node backend/index.js",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
+    "dev": "nodemon backend/index.js"
   },
   "author": "",
   "license": "ISC",

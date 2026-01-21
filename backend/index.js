@@ -8,7 +8,12 @@ import itemRoutes from "./src/routes/item.route.js"
 import SupplierRoutes from "./src/routes/supplier.route.js";
 import orderRoutes from "./src/routes/order.route.js"
 import analyticsRoutes from "./src/routes/analytics.routes.js"
+import path from "path";
 import cors from "cors"
+
+// production 
+const _dirname =path.resolve()
+
 
 
 app.use(express.json());
@@ -39,6 +44,12 @@ app.use("/api/v1/analytics", analyticsRoutes)
 //Database connection
 connectDB();
 
+// production 
+app.use(express.static(path.join(_dirname,"/frontend/dist")))
+app.get("*",(_,res)=>{
+    res.sendFile(path.join(_dirname, "frontend","dist","index.html"))
+
+})
 
 app.listen(process.env.PORT,(req,res)=>{
     console.log(`connection established on port ${process.env.PORT}`)

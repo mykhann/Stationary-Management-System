@@ -1,1 +1,18 @@
-node_modules
+# Node
+node_modules/
+
+# Env
+.env
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
