@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 const corsOptions = {
-    origin: 'https://statiocore-stationary-management-system.onrender.com/',
+    origin: 'https://statiocore-stationary-management-system.onrender.com',
     credentials: true
 }
 app.use(cors(corsOptions))
