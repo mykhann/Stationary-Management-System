@@ -1,6 +1,6 @@
 
 import bcrypt from "bcrypt";
-import { User } from "../model/User.model.js";
+import { User } from "../model/user.model.js";
 import jwt from "jsonwebtoken";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { asyncHandler } from "../middlewares/asyncHandler.js";
