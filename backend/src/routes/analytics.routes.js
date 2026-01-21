@@ -29,7 +29,9 @@ router.get("/descriptive", async (req, res, next) => {
 // Predictive Analytics Route
 router.get("/predictive", async (req, res) => {
   try {
-    const response = await axios.get("http://localhost:5001/forecast");
+    const response = await axios.get(
+  `${process.env.FORECAST_SERVICE_URL}/forecast`
+);
     res.json(response.data);
   } catch (err) {
     res.status(500).json({
