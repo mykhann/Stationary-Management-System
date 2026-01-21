@@ -2,7 +2,7 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from './components/layout/Home.jsx';
 import Products from './components/products/Products.jsx';
-import Login from './components/auth/Login.sx';
+import Login from './components/auth/Login.jsx';
 import Signup from './components/auth/Signup.jsx';
 import About from './components/auth/About.jsx';
 import Contact from './components/auth/Contact.jsx';
