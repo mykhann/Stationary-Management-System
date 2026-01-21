@@ -13,7 +13,7 @@ import { ToastContainer } from 'react-toastify';
 import ProfileDetails from './components/auth/ProfileDetails.jsx';
 import Dashboard from './components/admin/Dashboard.jsx';
 import Cart from './components/order/Cart.jsx';
-import Checkout from './components/order/test.jsx';
+import Checkout from './components/order/Checkout.jsx/index.js';
 import OrderHistory from './components/order/OrderHistory.jsx';
 import ProductManagement from './components/admin/ProductManagement.jsx';
 import CustomerManagement from './components/admin/CustomerManagement.jsx';
